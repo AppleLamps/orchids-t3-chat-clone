@@ -53,9 +53,21 @@ const LoadingIndicator = memo(function LoadingIndicator() {
 
 export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastMessageCountRef = useRef(messages.length);
+  const lastContentLengthRef = useRef(0);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const currentContentLength = messages.reduce((acc, m) => acc + (typeof m.content === "string" ? m.content.length : 0), 0);
+    
+    if (messages.length > lastMessageCountRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else if (currentContentLength > lastContentLengthRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "instant" });
+    }
+    
+    lastMessageCountRef.current = messages.length;
+    lastContentLengthRef.current = currentContentLength;
   }, [messages]);
 
   if (messages.length === 0) {
@@ -63,7 +75,7 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   }
 
   return (
-    <div className="flex flex-col gap-8 px-4 pt-16 pb-8 max-w-3xl mx-auto" role="log" aria-live="polite">
+    <div ref={containerRef} className="flex flex-col gap-8 px-4 pt-16 pb-8 max-w-3xl mx-auto" role="log" aria-live="polite">
       {messages.map((message) => (
         <div key={message.id}>
           {message.role === "user" ? (

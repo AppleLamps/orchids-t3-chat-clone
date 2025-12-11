@@ -206,6 +206,8 @@ export function useChatStore() {
           )
         );
 
+        setIsLoading(false);
+
         if (reader) {
           while (true) {
             const { done, value } = await reader.read();
