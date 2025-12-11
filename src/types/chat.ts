@@ -44,11 +44,11 @@ export interface Attachment {
 }
 
 export const MODELS = [
-  { id: "openai/gpt-4o-mini", name: "GPT-4o Mini", icon: "openai", capabilities: ["vision", "reasoning"], isDefault: true },
-  { id: "anthropic/claude-3.5-haiku", name: "Claude 3.5 Haiku", icon: "anthropic", capabilities: ["reasoning"] },
-  { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash", icon: "gemini", capabilities: ["vision", "reasoning"] },
-  { id: "mistralai/mistral-small-3.1-24b-instruct:free", name: "Mistral Small", icon: "mistral", capabilities: ["reasoning"] },
-  { id: "meta-llama/llama-3.3-70b-instruct:free", name: "Llama 3.3 70B", icon: "meta", capabilities: ["reasoning"] },
+  { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", icon: "xai", capabilities: ["vision", "reasoning"], isDefault: true },
+  { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4", icon: "anthropic", capabilities: ["vision", "reasoning"] },
+  { id: "google/gemini-2.5-flash-preview", name: "Gemini 2.5 Flash", icon: "gemini", capabilities: ["vision", "reasoning"] },
+  { id: "openai/gpt-4.1", name: "GPT-4.1", icon: "openai", capabilities: ["vision", "reasoning"] },
+  { id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", icon: "meta", capabilities: ["reasoning"] },
 ] as const;
 
 export type ModelId = typeof MODELS[number]["id"];
