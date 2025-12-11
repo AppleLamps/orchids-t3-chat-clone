@@ -93,22 +93,23 @@ function CodeBlock({
       </div>
 
       {isHtml && (
-        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="w-[95vw] max-w-none h-[80vh] flex flex-col">
-            <DialogHeader>
-              <DialogTitle>HTML Preview</DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 w-full min-h-0 border rounded bg-white overflow-hidden">
-              <iframe
-                srcDoc={value}
-                className="w-full h-full border-none"
-                sandbox="allow-scripts"
-                title="HTML Preview"
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
+          <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+            <DialogContent className="!w-[90vw] !max-w-[90vw] !h-[85vh] flex flex-col">
+              <DialogHeader>
+                <DialogTitle>HTML Preview</DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 w-full min-h-0 border rounded bg-white overflow-hidden">
+                <iframe
+                  srcDoc={value}
+                  className="w-full h-full border-none"
+                  sandbox="allow-scripts"
+                  title="HTML Preview"
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+
     </div>
   );
 }
