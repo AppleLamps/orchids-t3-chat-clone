@@ -171,7 +171,7 @@ export function useChatStore() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: messagesForApi,
-            model: webSearchEnabled ? `${selectedModel}:online` : selectedModel,
+            model: selectedModel,
             systemPrompt,
           }),
         });

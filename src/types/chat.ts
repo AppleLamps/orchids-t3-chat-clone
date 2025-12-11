@@ -44,12 +44,11 @@ export interface Attachment {
 }
 
 export const MODELS = [
-  { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", icon: "xai", capabilities: ["vision", "reasoning"], isDefault: true },
-  { id: "x-ai/grok-code-fast-1", name: "Grok Code Fast", icon: "xai", capabilities: ["reasoning"] },
-  { id: "mistralai/devstral-2512:free", name: "Devstral", icon: "mistral", capabilities: ["reasoning"] },
-  { id: "openai/gpt-oss-120b:free", name: "GPT OSS 120B", icon: "openai", capabilities: ["reasoning"] },
-  { id: "nvidia/nemotron-nano-12b-v2-vl:free", name: "Nemotron Nano 12B", icon: "nvidia", capabilities: ["vision"] },
-  { id: "google/gemini-2.5-flash-lite", name: "Gemini 2.5 Flash Lite", icon: "gemini", capabilities: ["reasoning", "vision"] },
+  { id: "openai/gpt-4o-mini", name: "GPT-4o Mini", icon: "openai", capabilities: ["vision", "reasoning"], isDefault: true },
+  { id: "anthropic/claude-3.5-haiku", name: "Claude 3.5 Haiku", icon: "anthropic", capabilities: ["reasoning"] },
+  { id: "google/gemini-2.0-flash-exp:free", name: "Gemini 2.0 Flash", icon: "gemini", capabilities: ["vision", "reasoning"] },
+  { id: "mistralai/mistral-small-3.1-24b-instruct:free", name: "Mistral Small", icon: "mistral", capabilities: ["reasoning"] },
+  { id: "meta-llama/llama-3.3-70b-instruct:free", name: "Llama 3.3 70B", icon: "meta", capabilities: ["reasoning"] },
 ] as const;
 
 export type ModelId = typeof MODELS[number]["id"];

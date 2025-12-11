@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         "X-Title": "T3 Chat Clone",
       },
       body: JSON.stringify({
-        model: model || "x-ai/grok-4.1-fast",
+        model: model || "openai/gpt-4o-mini",
         messages: messagesWithSystem,
         stream: true,
       }),
