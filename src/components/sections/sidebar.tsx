@@ -31,7 +31,7 @@ export default function Sidebar({
   return (
     <aside 
       className={cn(
-        "relative h-screen w-[250px] flex-shrink-0 flex-col border-r border-[#E0D0DB] bg-[#F5E6F0] text-[#4A1A3F] font-sans transition-all duration-300 ease-in-out",
+        "relative h-screen w-[250px] flex-shrink-0 flex-col border-r border-[#E5E5E5] bg-[#F5F5F5] text-[#1A1A1A] font-sans transition-all duration-300 ease-in-out",
         isOpen ? "md:flex md:translate-x-0" : "md:flex md:-translate-x-full md:w-0 md:border-r-0",
         "hidden"
       )}
@@ -50,7 +50,7 @@ export default function Sidebar({
           <h1 className="flex h-8 shrink-0 items-center justify-center text-lg transition-opacity delay-75 duration-75">
             <Link 
               href="/" 
-              className="relative flex h-8 w-24 items-center justify-center text-sm font-semibold text-[#4A1A3F] no-underline"
+              className="relative flex h-8 w-24 items-center justify-center text-sm font-semibold text-[#1A1A1A] no-underline"
             >
               <div className="flex h-3.5 items-center justify-center gap-1 select-none">
                 lamps.chat
@@ -61,18 +61,18 @@ export default function Sidebar({
           <div className="px-1">
             <button
               onClick={onNewChat}
-              className="group inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-lg bg-[#A23B67] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#d56698] active:bg-[#A23B67] no-underline"
+              className="group inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-lg bg-[#000000] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#333333] active:bg-[#000000] no-underline"
             >
               New Chat
             </button>
           </div>
 
-          <div className="border-b border-[#E0D0DB] px-3 pt-1">
+          <div className="border-b border-[#E5E5E5] px-3 pt-1">
             <div className="flex items-center">
-              <Search className="mr-3 -ml-[3px] h-4 w-4 min-w-4 text-[#A88A9F]" />
+              <Search className="mr-3 -ml-[3px] h-4 w-4 min-w-4 text-[#888888]" />
               <input
                 type="search"
-                className="w-full bg-transparent py-2 text-sm text-[#4A1A3F] placeholder-[#A88A9F]/50 outline-none placeholder:select-none focus:outline-none"
+                className="w-full bg-transparent py-2 text-sm text-[#1A1A1A] placeholder-[#888888]/50 outline-none placeholder:select-none focus:outline-none"
                 placeholder="Search your threads..."
                 aria-label="Search threads"
                 value={searchQuery}
@@ -89,13 +89,13 @@ export default function Sidebar({
               className={cn(
                 "group flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors",
                 currentChatId === chat.id
-                  ? "bg-[#E8D5E5]"
-                  : "hover:bg-[#E8D5E5]/50"
+                  ? "bg-[#EBEBEB]"
+                  : "hover:bg-[#EBEBEB]/50"
               )}
               onClick={() => onSelectChat(chat.id)}
             >
-              <MessageSquare className="h-4 w-4 flex-shrink-0 text-[#A88A9F]" />
-              <span className="flex-1 text-sm truncate text-[#4A1A3F]">
+              <MessageSquare className="h-4 w-4 flex-shrink-0 text-[#888888]" />
+              <span className="flex-1 text-sm truncate text-[#1A1A1A]">
                 {chat.title}
               </span>
               <button
@@ -103,19 +103,19 @@ export default function Sidebar({
                   e.stopPropagation();
                   onDeleteChat(chat.id);
                 }}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#E0D0DB] transition-all"
+                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#E5E5E5] transition-all"
               >
-                <Trash2 className="h-3 w-3 text-[#A88A9F]" />
+                <Trash2 className="h-3 w-3 text-[#888888]" />
               </button>
             </div>
           ))}
           {displayedChats.length === 0 && chats.length === 0 && (
-            <p className="text-xs text-[#A88A9F] text-center py-4">
+            <p className="text-xs text-[#888888] text-center py-4">
               No chats yet. Start a new conversation!
             </p>
           )}
           {displayedChats.length === 0 && chats.length > 0 && searchQuery && (
-            <p className="text-xs text-[#A88A9F] text-center py-4">
+            <p className="text-xs text-[#888888] text-center py-4">
               No matching chats found.
             </p>
           )}
@@ -126,7 +126,7 @@ export default function Sidebar({
             href="https://x.com/lamps_apple"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex w-full items-center gap-4 rounded-lg p-4 text-[#A88A9F] hover:bg-[#E8D5E5] transition-colors select-none no-underline"
+            className="flex w-full items-center gap-4 rounded-lg p-4 text-[#888888] hover:bg-[#EBEBEB] transition-colors select-none no-underline"
           >
             <LogIn className="h-4 w-4" />
             <span className="text-sm font-medium">API costs covered by Apple Lamps</span>

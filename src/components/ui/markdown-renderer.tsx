@@ -90,7 +90,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             if (isInline) {
               return (
                 <code
-                  className="px-1.5 py-0.5 rounded bg-[#e8e0e5] text-[#A23B67] font-mono text-sm"
+                  className="px-1.5 py-0.5 rounded bg-[#e8e8e8] text-[#000000] font-mono text-sm"
                   {...props}
                 >
                   {children}
@@ -128,7 +128,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
           },
           blockquote({ children }) {
             return (
-              <blockquote className="border-l-4 border-[#A23B67] pl-4 my-4 italic text-[#6b5060]">
+              <blockquote className="border-l-4 border-[#000000] pl-4 my-4 italic text-[#555555]">
                 {children}
               </blockquote>
             );
@@ -137,7 +137,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return (
               <a
                 href={href}
-                className="text-[#A23B67] underline hover:text-[#8a2f55] transition-colors"
+                className="text-[#000000] underline hover:text-[#333333] transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -152,29 +152,29 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             return <em className="italic">{children}</em>;
           },
           hr() {
-            return <hr className="my-6 border-[#E0D0DB]" />;
+            return <hr className="my-6 border-[#E5E5E5]" />;
           },
           table({ children }) {
             return (
               <div className="overflow-x-auto my-4">
-                <table className="min-w-full border border-[#E0D0DB] rounded-lg overflow-hidden">
+                <table className="min-w-full border border-[#E5E5E5] rounded-lg overflow-hidden">
                   {children}
                 </table>
               </div>
             );
           },
           thead({ children }) {
-            return <thead className="bg-[#f5eff3]">{children}</thead>;
+            return <thead className="bg-[#F5F5F5]">{children}</thead>;
           },
           tbody({ children }) {
-            return <tbody className="divide-y divide-[#E0D0DB]">{children}</tbody>;
+            return <tbody className="divide-y divide-[#E5E5E5]">{children}</tbody>;
           },
           tr({ children }) {
             return <tr>{children}</tr>;
           },
           th({ children }) {
             return (
-              <th className="px-4 py-2 text-left text-sm font-semibold text-[#4A1A3F]">
+              <th className="px-4 py-2 text-left text-sm font-semibold text-[#1A1A1A]">
                 {children}
               </th>
             );

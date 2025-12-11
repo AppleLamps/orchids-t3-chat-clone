@@ -205,7 +205,7 @@ export default function ChatInputForm({
           </button>
         </div>
       )}
-      <div className="min-w-0 rounded-2xl bg-white/90 p-1.5 backdrop-blur-xl shadow-[0_8px_40px_rgba(162,59,103,0.12),0_2px_12px_rgba(0,0,0,0.08)]">
+      <div className="min-w-0 rounded-2xl bg-white/90 p-1.5 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.08),0_2px_12px_rgba(0,0,0,0.04)]">
         <form
           className={cn(
             "text-secondary-foreground pointer-events-auto relative flex w-full min-w-0 flex-col items-stretch gap-2",
@@ -219,22 +219,22 @@ export default function ChatInputForm({
               {attachments.map((att) => (
                 <div
                   key={att.id}
-                  className="relative flex items-center gap-2 px-3 py-2 bg-[#F5E6F0] rounded-lg border border-[#E0D0DB]"
+                  className="relative flex items-center gap-2 px-3 py-2 bg-[#F0F0F0] rounded-lg border border-[#E5E5E5]"
                 >
                   {att.type === "image" ? (
-                    <Image className="w-4 h-4 text-[#A23B67]" />
+                    <Image className="w-4 h-4 text-[#333333]" />
                   ) : (
-                    <FileText className="w-4 h-4 text-[#A23B67]" />
+                    <FileText className="w-4 h-4 text-[#333333]" />
                   )}
-                  <span className="text-xs text-[#4A1A3F] max-w-[100px] truncate">
+                  <span className="text-xs text-[#1A1A1A] max-w-[100px] truncate">
                     {att.name}
                   </span>
                   <button
                     type="button"
                     onClick={() => onRemoveAttachment(att.id)}
-                    className="ml-1 p-0.5 rounded-full hover:bg-[#E0D0DB] transition-colors"
+                    className="ml-1 p-0.5 rounded-full hover:bg-[#E5E5E5] transition-colors"
                   >
-                    <X className="w-3 h-3 text-[#4A1A3F]" />
+                    <X className="w-3 h-3 text-[#1A1A1A]" />
                   </button>
                 </div>
               ))}
@@ -263,8 +263,8 @@ export default function ChatInputForm({
                   "inline-flex items-center justify-center gap-2 text-sm whitespace-nowrap transition-colors",
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   "shadow-sm",
-                  "bg-[#A23B67] hover:bg-[#d56698] active:bg-[#A23B67]",
-                  "disabled:hover:bg-[#A23B67]",
+                  "bg-[#000000] hover:bg-[#333333] active:bg-[#000000]",
+                  "disabled:hover:bg-[#000000]",
                   "size-9 relative rounded-lg p-2 text-white font-semibold"
                 )}
                 aria-label="Send message"
@@ -316,7 +316,7 @@ export default function ChatInputForm({
                             placeholder="Search models..."
                             value={modelSearch}
                             onChange={(e) => setModelSearch(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A23B67]/20 focus:border-[#A23B67]/40"
+                            className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#000000]/20 focus:border-[#000000]/40"
                             autoFocus
                           />
                         </div>
@@ -328,7 +328,7 @@ export default function ChatInputForm({
                             type="button"
                             className={cn(
                               "w-full px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors",
-                              selectedModel === model.id && "bg-[#F5E6F0]"
+                              selectedModel === model.id && "bg-[#F0F0F0]"
                             )}
                             onClick={() => {
                               onModelChange(model.id);
@@ -343,7 +343,7 @@ export default function ChatInputForm({
                               <div className="flex items-center gap-2">
                                 <span className={cn(
                                   "text-sm font-medium",
-                                  selectedModel === model.id ? "text-[#A23B67]" : "text-gray-800"
+                                  selectedModel === model.id ? "text-[#000000]" : "text-gray-800"
                                 )}>
                                   {model.name}
                                 </span>
@@ -380,7 +380,7 @@ export default function ChatInputForm({
                           className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
                         >
                           <span>Show all</span>
-                          <span className="w-2 h-2 rounded-full bg-[#A23B67]"></span>
+                          <span className="w-2 h-2 rounded-full bg-[#000000]"></span>
                         </button>
                         <Filter className="w-4 h-4 text-gray-400" />
                       </div>
@@ -397,7 +397,7 @@ export default function ChatInputForm({
                     "hover:bg-muted/40 hover:text-foreground",
                     "text-xs border-secondary-foreground/10 h-8 gap-2 rounded-full border border-solid px-2 sm:px-2.5",
                     webSearchEnabled
-                      ? "bg-[#A23B67] text-white border-[#A23B67]"
+                      ? "bg-[#000000] text-white border-[#000000]"
                       : "text-muted-foreground"
                   )}
                   type="button"

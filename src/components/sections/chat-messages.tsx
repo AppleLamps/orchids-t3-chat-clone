@@ -32,7 +32,7 @@ const UserMessage = memo(function UserMessage({ content }: { content: string }) 
 const AssistantMessage = memo(function AssistantMessage({ content }: { content: string }) {
   return (
     <div className="flex flex-col">
-      <div className="text-[#4A1A3F] text-[15px]">
+      <div className="text-[#1A1A1A] text-[15px]">
         <MarkdownRenderer content={content} />
       </div>
     </div>
@@ -43,9 +43,9 @@ const LoadingIndicator = memo(function LoadingIndicator() {
   return (
     <div className="flex flex-col">
       <div className="flex gap-1.5 py-2">
-        <span className="w-2 h-2 bg-[#A23B67] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-        <span className="w-2 h-2 bg-[#A23B67] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-        <span className="w-2 h-2 bg-[#A23B67] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+        <span className="w-2 h-2 bg-[#000000] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+        <span className="w-2 h-2 bg-[#000000] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+        <span className="w-2 h-2 bg-[#000000] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
       </div>
     </div>
   );
