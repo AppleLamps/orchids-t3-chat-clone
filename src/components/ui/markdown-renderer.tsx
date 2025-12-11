@@ -94,7 +94,7 @@ function CodeBlock({
 
       {isHtml && (
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-[90vw] h-[80vh] flex flex-col">
+          <DialogContent className="w-[95vw] max-w-none h-[80vh] flex flex-col">
             <DialogHeader>
               <DialogTitle>HTML Preview</DialogTitle>
             </DialogHeader>

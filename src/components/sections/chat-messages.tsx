@@ -63,7 +63,7 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   }
 
   return (
-    <div className="flex flex-col gap-8 px-4 pt-16 pb-8 max-w-6xl mx-auto" role="log" aria-live="polite">
+    <div className="flex flex-col gap-8 px-4 pt-16 pb-8 max-w-3xl mx-auto" role="log" aria-live="polite">
       {messages.map((message) => (
         <div key={message.id}>
           {message.role === "user" ? (

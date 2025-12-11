@@ -26,7 +26,7 @@ interface WelcomeHeaderProps {
 
 export default function WelcomeHeader({ onSendMessage, selectedCategory, onCategoryChange }: WelcomeHeaderProps) {
   return (
-    <div className="pt-8 mx-auto flex w-full max-w-6xl flex-col px-4 pb-10">
+    <div className="pt-8 mx-auto flex w-full max-w-3xl flex-col px-4 pb-10">
       <div className="flex min-h-[calc(100vh-20rem)] items-start justify-center">
         <div className="w-full space-y-6 px-2 pt-[calc(max(15vh,2.5rem))] sm:px-8">
           <h2 className="text-3xl font-semibold text-foreground">
