@@ -45,10 +45,12 @@ export interface Attachment {
 
 export const MODELS = [
   { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", icon: "xai", capabilities: ["vision", "reasoning"], isDefault: true },
-  { id: "anthropic/claude-sonnet-4", name: "Claude Sonnet 4", icon: "anthropic", capabilities: ["vision", "reasoning"] },
-  { id: "google/gemini-2.5-flash-preview", name: "Gemini 2.5 Flash", icon: "gemini", capabilities: ["vision", "reasoning"] },
-  { id: "openai/gpt-4.1", name: "GPT-4.1", icon: "openai", capabilities: ["vision", "reasoning"] },
-  { id: "meta-llama/llama-4-maverick", name: "Llama 4 Maverick", icon: "meta", capabilities: ["reasoning"] },
+  { id: "x-ai/grok-code-fast-1", name: "Grok Code Fast", icon: "xai", capabilities: ["reasoning"] },
+  { id: "mistralai/devstral-2512:free", name: "Devstral", icon: "mistral", capabilities: ["reasoning"] },
+  { id: "anthropic/claude-haiku-4.5", name: "Claude Haiku 4.5", icon: "anthropic", capabilities: ["vision", "reasoning"] },
+  { id: "openai/gpt-oss-20b:free", name: "GPT OSS 20B", icon: "openai", capabilities: ["reasoning"] },
+  { id: "openai/gpt-5-mini", name: "GPT-5 Mini", icon: "openai", capabilities: ["vision", "reasoning"] },
+  { id: "nvidia/nemotron-nano-12b-v2-vl:free", name: "Nemotron Nano 12B", icon: "nvidia", capabilities: ["vision", "reasoning"] },
 ] as const;
 
 export type ModelId = typeof MODELS[number]["id"];
