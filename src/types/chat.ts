@@ -47,7 +47,6 @@ export const MODELS = [
   { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", icon: "xai", capabilities: ["vision", "reasoning"], isDefault: true },
   { id: "x-ai/grok-code-fast-1", name: "Grok Code Fast", icon: "xai", capabilities: ["reasoning"] },
   { id: "mistralai/devstral-2512:free", name: "Devstral", icon: "mistral", capabilities: ["reasoning"] },
-  { id: "anthropic/claude-haiku-4.5", name: "Claude Haiku 4.5", icon: "anthropic", capabilities: ["vision", "reasoning"] },
   { id: "openai/gpt-oss-20b:free", name: "GPT OSS 20B", icon: "openai", capabilities: ["reasoning"] },
   { id: "openai/gpt-5-mini", name: "GPT-5 Mini", icon: "openai", capabilities: ["vision", "reasoning"] },
   { id: "nvidia/nemotron-nano-12b-v2-vl:free", name: "Nemotron Nano 12B", icon: "nvidia", capabilities: ["vision", "reasoning"] },
