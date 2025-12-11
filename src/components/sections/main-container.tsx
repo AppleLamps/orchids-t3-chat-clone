@@ -21,20 +21,7 @@ export default function MainContainer({ children, sidebarOpen = true }: MainCont
         />
       </div>
 
-      {/* Curved header swoop - matches AppleLamps.chat design */}
-      <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none max-sm:hidden">
-        <svg
-          className="w-full drop-shadow-[0_10px_30px_rgba(15,23,42,0.08)]"
-          viewBox="0 0 1440 132"
-          preserveAspectRatio="none"
-          style={{ height: "96px" }}
-        >
-          <path
-            d="M0 0H960C1145 0 1240 18 1345 60C1390 78 1420 104 1440 132V0Z"
-            className="fill-sidebar"
-          />
-        </svg>
-      </div>
+      <div className="absolute inset-x-0 top-0 h-14 border-b border-border/70 bg-sidebar/95 shadow-sm" />
 
       <div className="absolute top-0 bottom-0 w-full overflow-y-auto">
         {children}
