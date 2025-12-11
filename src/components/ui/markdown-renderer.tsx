@@ -94,7 +94,10 @@ function CodeBlock({
 
       {isHtml && (
           <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-            <DialogContent className="!w-[90vw] !max-w-[90vw] !h-[85vh] flex flex-col">
+            <DialogContent 
+              className="flex flex-col"
+              style={{ width: '90vw', maxWidth: '90vw', height: '85vh' }}
+            >
               <DialogHeader>
                 <DialogTitle>HTML Preview</DialogTitle>
               </DialogHeader>
