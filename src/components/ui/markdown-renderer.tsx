@@ -2,9 +2,15 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Check, Copy, Download, WrapText } from "lucide-react";
+import { Check, Copy, Download, WrapText, Eye } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface MarkdownRendererProps {
   content: string;
@@ -19,6 +25,9 @@ function CodeBlock({
   value: string;
 }) {
   const [copied, setCopied] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const isHtml = language?.toLowerCase() === "html";
 
   const copyToClipboard = async () => {
     await navigator.clipboard.writeText(value);
@@ -42,6 +51,15 @@ function CodeBlock({
       <div className="flex items-center justify-between px-4 py-2 bg-[#ebebeb] border-b border-[#e0e0e0]">
         <span className="text-xs font-medium text-[#666666]">{language || "text"}</span>
         <div className="flex items-center gap-1">
+          {isHtml && (
+            <button
+              onClick={() => setPreviewOpen(true)}
+              className="p-1.5 rounded hover:bg-[#d5d5d5] transition-colors"
+              title="Preview HTML"
+            >
+              <Eye className="w-4 h-4 text-[#666666]" />
+            </button>
+          )}
           <button
             onClick={downloadCode}
             className="p-1.5 rounded hover:bg-[#d5d5d5] transition-colors"
@@ -73,6 +91,24 @@ function CodeBlock({
           <code className="text-[#333333] font-mono">{value}</code>
         </pre>
       </div>
+
+      {isHtml && (
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          <DialogContent className="max-w-4xl h-[80vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>HTML Preview</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 w-full min-h-0 border rounded bg-white overflow-hidden">
+              <iframe
+                srcDoc={value}
+                className="w-full h-full border-none"
+                sandbox="allow-scripts"
+                title="HTML Preview"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
