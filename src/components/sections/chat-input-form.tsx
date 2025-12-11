@@ -2,10 +2,14 @@
 
 import { useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUp, ChevronDown, Globe, Paperclip, X, FileText, Image, Search, Eye, Brain, ImageIcon, Filter } from "lucide-react";
+import { ArrowUp, ChevronDown, Globe, Paperclip, X, FileText, Image, Search, Eye, Brain, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS } from "@/types/chat";
 import type { ModelId, Attachment } from "@/types/chat";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const SUPPORTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const SUPPORTED_FILE_TYPES = [...SUPPORTED_IMAGE_TYPES, "application/pdf"];
 
 interface ChatInputFormProps {
   onSend: (content: string) => void;
@@ -103,6 +107,7 @@ export default function ChatInputForm({
   const [input, setInput] = useState("");
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [modelSearch, setModelSearch] = useState("");
+  const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelButtonRef = useRef<HTMLButtonElement>(null);
@@ -135,8 +140,23 @@ export default function ChatInputForm({
       const files = e.target.files;
       if (!files) return;
 
+      setFileError(null);
+
       for (const file of Array.from(files)) {
+        if (file.size > MAX_FILE_SIZE) {
+          setFileError(`File "${file.name}" exceeds 10MB limit`);
+          continue;
+        }
+
+        if (!SUPPORTED_FILE_TYPES.includes(file.type)) {
+          setFileError(`File type not supported: ${file.type}`);
+          continue;
+        }
+
         const reader = new FileReader();
+        reader.onerror = () => {
+          setFileError(`Failed to read file: ${file.name}`);
+        };
         reader.onload = () => {
           const dataUrl = reader.result as string;
           const isImage = file.type.startsWith("image/");
@@ -177,6 +197,14 @@ export default function ChatInputForm({
 
   return (
     <div className="pointer-events-auto w-full max-w-3xl mx-auto px-4 pb-0">
+      {fileError && (
+        <div className="mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center justify-between">
+          <span>{fileError}</span>
+          <button type="button" onClick={() => setFileError(null)} className="p-0.5 hover:bg-red-100 rounded">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       <div className="min-w-0 rounded-2xl bg-white/90 p-1.5 backdrop-blur-xl shadow-[0_8px_40px_rgba(162,59,103,0.12),0_2px_12px_rgba(0,0,0,0.08)]">
         <form
           className={cn(
