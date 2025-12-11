@@ -196,7 +196,7 @@ export default function ChatInputForm({
   const modalPosition = getModalPosition();
 
   return (
-    <div className="pointer-events-auto w-full max-w-3xl mx-auto px-4 pb-0">
+    <div className="pointer-events-auto w-full max-w-6xl mx-auto px-4 pb-0">
       {fileError && (
         <div className="mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center justify-between">
           <span>{fileError}</span>
@@ -210,7 +210,7 @@ export default function ChatInputForm({
           className={cn(
             "text-secondary-foreground pointer-events-auto relative flex w-full min-w-0 flex-col items-stretch gap-2",
             "rounded-xl bg-white/95 px-5 py-4",
-            "sm:max-w-3xl"
+            "sm:max-w-6xl"
           )}
           onSubmit={handleSubmit}
         >
