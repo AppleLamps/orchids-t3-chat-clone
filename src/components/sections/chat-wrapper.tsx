@@ -32,6 +32,8 @@ export function ChatWrapper() {
     selectChat,
     deleteChat,
     searchChats,
+    selectedCategory,
+    setSelectedCategory,
   } = useChatStore();
 
   return (
@@ -62,7 +64,11 @@ export function ChatWrapper() {
                 isLoading={isLoading} 
               />
             ) : (
-              <WelcomeHeader onSendMessage={sendMessage} />
+              <WelcomeHeader 
+                onSendMessage={sendMessage}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+              />
             )}
           </div>
           

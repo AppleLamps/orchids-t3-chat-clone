@@ -3,12 +3,13 @@ import type { MessageContent, ModelId } from "@/types/chat";
 interface ChatRequest {
   messages: Array<{ role: string; content: MessageContent }>;
   model?: ModelId;
+  systemPrompt?: string | null;
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json() as ChatRequest;
-    const { messages, model } = body;
+    const { messages, model, systemPrompt } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Invalid messages format" }), {
@@ -28,6 +29,10 @@ export async function POST(req: Request) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60000);
 
+    const messagesWithSystem = systemPrompt
+      ? [{ role: "system", content: systemPrompt }, ...messages]
+      : messages;
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -38,7 +43,7 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         model: model || "x-ai/grok-4.1-fast",
-        messages,
+        messages: messagesWithSystem,
         stream: true,
       }),
       signal: controller.signal,

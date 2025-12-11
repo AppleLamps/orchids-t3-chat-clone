@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { Sparkles, GalleryVertical, Code, GraduationCap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { CategoryId } from "@/hooks/use-chat-store";
 
 const tabs = [
-  { id: "create", label: "Create", icon: Sparkles },
-  { id: "explore", label: "Explore", icon: GalleryVertical },
-  { id: "code", label: "Code", icon: Code },
-  { id: "learn", label: "Learn", icon: GraduationCap },
+  { id: "create" as CategoryId, label: "Create", icon: Sparkles },
+  { id: "explore" as CategoryId, label: "Explore", icon: GalleryVertical },
+  { id: "code" as CategoryId, label: "Code", icon: Code },
+  { id: "learn" as CategoryId, label: "Learn", icon: GraduationCap },
 ];
 
 const SUGGESTED_QUESTIONS = [
@@ -20,11 +20,11 @@ const SUGGESTED_QUESTIONS = [
 
 interface WelcomeHeaderProps {
   onSendMessage: (message: string) => void;
+  selectedCategory: CategoryId | null;
+  onCategoryChange: (category: CategoryId) => void;
 }
 
-export default function WelcomeHeader({ onSendMessage }: WelcomeHeaderProps) {
-  const [selected, setSelected] = useState<string | null>(null);
-
+export default function WelcomeHeader({ onSendMessage, selectedCategory, onCategoryChange }: WelcomeHeaderProps) {
   return (
     <div className="pt-8 mx-auto flex w-full max-w-3xl flex-col px-4 pb-10">
       <div className="flex min-h-[calc(100vh-20rem)] items-start justify-center">
@@ -36,12 +36,12 @@ export default function WelcomeHeader({ onSendMessage }: WelcomeHeaderProps) {
           <div className="flex flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly">
             {tabs.map((tab) => {
               const Icon = tab.icon;
-              const isSelected = selected === tab.id;
+              const isSelected = selectedCategory === tab.id;
 
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setSelected(tab.id)}
+                  onClick={() => onCategoryChange(tab.id)}
                   data-selected={isSelected}
                   className={cn(
                     "flex items-center gap-1 rounded-xl px-5 py-2 h-9",

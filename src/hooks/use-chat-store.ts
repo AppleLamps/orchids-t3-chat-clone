@@ -4,6 +4,15 @@ import { useState, useEffect, useCallback } from "react";
 import type { Chat, Message, ModelId, Attachment } from "@/types/chat";
 import { MODELS } from "@/types/chat";
 
+export type CategoryId = "create" | "explore" | "code" | "learn";
+
+const CATEGORY_SYSTEM_PROMPTS: Record<CategoryId, string> = {
+  create: "You are a creative assistant. Help users with writing, brainstorming, storytelling, content creation, and artistic ideas. Be imaginative, inspiring, and offer unique perspectives. Encourage creativity and think outside the box.",
+  explore: "You are a research and discovery assistant. Help users explore topics, find information, analyze data, and understand complex subjects. Be thorough, provide multiple perspectives, and cite relevant context when helpful.",
+  code: "You are a coding assistant. Help users write, debug, and understand code. Provide clean, efficient, and well-documented solutions. Explain technical concepts clearly and follow best practices for the relevant programming languages.",
+  learn: "You are an educational assistant. Help users learn new concepts, understand difficult topics, and develop their skills. Break down complex ideas into digestible parts, use analogies, and adapt your explanations to the user's level of understanding.",
+};
+
 const STORAGE_KEY = "t3-chat-history";
 
 function generateId() {
@@ -48,6 +57,7 @@ export function useChatStore() {
   const [webSearchEnabled, setWebSearchEnabled] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
 
   useEffect(() => {
     setChats(loadChatsFromStorage());
@@ -64,6 +74,7 @@ export function useChatStore() {
   const createNewChat = useCallback(() => {
     setCurrentChatId(null);
     setAttachments([]);
+    setSelectedCategory(null);
   }, []);
 
   const addAttachment = useCallback((attachment: Omit<Attachment, "id">) => {
@@ -153,12 +164,15 @@ export function useChatStore() {
             return { role: msg.role, content: msg.content };
           });
 
+        const systemPrompt = selectedCategory ? CATEGORY_SYSTEM_PROMPTS[selectedCategory] : null;
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             messages: messagesForApi,
             model: webSearchEnabled ? `${selectedModel}:online` : selectedModel,
+            systemPrompt,
           }),
         });
 
@@ -257,7 +271,7 @@ export function useChatStore() {
         setIsLoading(false);
       }
     },
-    [currentChatId, chats, selectedModel, webSearchEnabled, attachments, clearAttachments]
+    [currentChatId, chats, selectedModel, webSearchEnabled, attachments, clearAttachments, selectedCategory]
   );
 
   const selectChat = useCallback((chatId: string) => {
@@ -307,5 +321,7 @@ export function useChatStore() {
     selectChat,
     deleteChat,
     searchChats,
+    selectedCategory,
+    setSelectedCategory,
   };
 }
