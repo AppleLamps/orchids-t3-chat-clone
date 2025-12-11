@@ -9,7 +9,18 @@ export type CategoryId = "create" | "explore" | "code" | "learn";
 const CATEGORY_SYSTEM_PROMPTS: Record<CategoryId, string> = {
   create: "You are a creative assistant. Help users with writing, brainstorming, storytelling, content creation, and artistic ideas. Be imaginative, inspiring, and offer unique perspectives. Encourage creativity and think outside the box.",
   explore: "You are a research and discovery assistant. Help users explore topics, find information, analyze data, and understand complex subjects. Be thorough, provide multiple perspectives, and cite relevant context when helpful.",
-  code: "You are a coding assistant. Help users write, debug, and understand code. Provide clean, efficient, and well-documented solutions. Explain technical concepts clearly and follow best practices for the relevant programming languages.",
+  code: `You are an expert coding assistant. Help users write, debug, and understand code.
+
+When asked to create web content (games, interactive elements, visualizations, demos, etc.):
+- ALWAYS create a single HTML file with embedded CSS in <style> tags and JavaScript in <script> tags
+- Make it immediately runnable in a browser without any build steps or external dependencies
+- Include all styling inline - do not reference external stylesheets
+- The HTML should be complete and self-contained
+
+For other code requests:
+- Provide clean, efficient, and well-documented solutions
+- Explain technical concepts clearly
+- Follow best practices for the relevant programming languages`,
   learn: "You are an educational assistant. Help users learn new concepts, understand difficult topics, and develop their skills. Break down complex ideas into digestible parts, use analogies, and adapt your explanations to the user's level of understanding.",
 };
 
@@ -206,9 +217,8 @@ export function useChatStore() {
           )
         );
 
-        setIsLoading(false);
-
         if (reader) {
+          let firstContent = true;
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
@@ -224,6 +234,10 @@ export function useChatStore() {
                   const parsed = JSON.parse(data);
                   const delta = parsed.choices?.[0]?.delta?.content;
                   if (delta) {
+                    if (firstContent) {
+                      setIsLoading(false);
+                      firstContent = false;
+                    }
                     assistantContent += delta;
                     setChats((prev) =>
                       prev.map((chat) =>
@@ -241,7 +255,6 @@ export function useChatStore() {
                     );
                   }
                 } catch {
-                  // Skip invalid JSON
                 }
               }
             }
