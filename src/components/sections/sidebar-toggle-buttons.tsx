@@ -12,25 +12,25 @@ interface SidebarToggleButtonsProps {
 export default function SidebarToggleButtons({ isOpen, onToggle }: SidebarToggleButtonsProps) {
   return (
     <div className={cn(
-      "fixed top-2 z-50 flex flex-row gap-0.5 p-1 transition-[left] duration-300 ease-in-out",
+      "fixed top-2 z-50 flex flex-row gap-0.5 p-1 transition-[left] duration-300 ease-in-out font-mono",
       isOpen ? "left-[258px]" : "left-2"
     )}>
       <div
         className={cn(
           "pointer-events-none absolute inset-0 right-auto -z-10 rounded-md bg-transparent",
           "transition-[background-color,width] delay-0 duration-250",
-          "max-sm:w-[108px] max-sm:bg-[#F5F5F5]/50 max-sm:delay-125 max-sm:duration-125",
-          "w-10 backdrop-blur-[2px]"
+          "max-sm:w-[108px] max-sm:bg-black/50 max-sm:delay-125 max-sm:duration-125",
+          "w-10"
         )}
       />
 
       <button
         onClick={onToggle}
         className={cn(
-          "inline-flex h-8 w-8 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors z-10",
-          "text-[#888888]",
-          "hover:bg-[#888888]/40 hover:text-[#1A1A1A]",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#000000]"
+          "inline-flex h-8 w-8 items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-colors z-10",
+          "text-[#22c55e] border border-[#15803d] bg-black",
+          "hover:bg-[#15803d]/20 hover:text-[#4ade80]",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#22c55e]"
         )}
         aria-label="Toggle Sidebar"
       >
@@ -39,10 +39,10 @@ export default function SidebarToggleButtons({ isOpen, onToggle }: SidebarToggle
 
       <button
         className={cn(
-          "inline-flex h-8 w-8 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors",
-          "text-[#888888]",
-          "hover:bg-[#888888]/40 hover:text-[#1A1A1A]",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#000000]",
+          "inline-flex h-8 w-8 items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-colors",
+          "text-[#22c55e] border border-[#15803d] bg-black",
+          "hover:bg-[#15803d]/20 hover:text-[#4ade80]",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#22c55e]",
           "transition-[transform,opacity] delay-150 duration-250",
           "translate-x-0 opacity-100",
           "sm:pointer-events-none sm:-translate-x-[34px] sm:opacity-0 sm:delay-0 sm:duration-150"
@@ -55,10 +55,10 @@ export default function SidebarToggleButtons({ isOpen, onToggle }: SidebarToggle
       <Link
         href="/"
         className={cn(
-          "inline-flex h-8 w-8 items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors no-underline",
-          "text-[#888888]",
-          "hover:bg-[#888888]/40 hover:text-[#1A1A1A]",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#000000]",
+          "inline-flex h-8 w-8 items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-colors no-underline",
+          "text-[#22c55e] border border-[#15803d] bg-black",
+          "hover:bg-[#15803d]/20 hover:text-[#4ade80]",
+          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#22c55e]",
           "transition-[transform,opacity] delay-150 duration-150",
           "translate-x-0 opacity-100 active:scale-95",
           "sm:pointer-events-none sm:-translate-x-[34px] sm:opacity-0 sm:delay-0 sm:duration-150"

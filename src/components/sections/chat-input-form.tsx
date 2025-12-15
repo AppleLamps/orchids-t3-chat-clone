@@ -24,6 +24,8 @@ interface ChatInputFormProps {
 }
 
 const ModelIcon = ({ icon }: { icon: string }) => {
+  // Use generic icons or simple SVGs for terminal look, but keeping original SVGs with green fill/stroke is fine too.
+  // We'll forcecurrentColor to make them follow the text color.
   switch (icon) {
     case "grok":
       return (
@@ -71,25 +73,6 @@ const ModelIcon = ({ icon }: { icon: string }) => {
       );
     default:
       return <Brain className="w-5 h-5" />;
-  }
-};
-
-const getIconColor = (icon: string) => {
-  switch (icon) {
-    case "grok":
-      return "text-black";
-    case "xai":
-      return "text-slate-700";
-    case "mistral":
-      return "text-orange-500";
-    case "openai":
-      return "text-emerald-600";
-    case "nvidia":
-      return "text-green-500";
-    case "gemini":
-      return "text-blue-500";
-    default:
-      return "text-gray-500";
   }
 };
 
@@ -196,20 +179,20 @@ export default function ChatInputForm({
   const modalPosition = getModalPosition();
 
   return (
-    <div className="pointer-events-auto w-full max-w-3xl mx-auto px-4 pb-0">
+    <div className="pointer-events-auto w-full max-w-3xl mx-auto px-4 pb-0 font-mono">
       {fileError && (
-        <div className="mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center justify-between">
+        <div className="mb-2 px-3 py-2 bg-red-900/20 border border-red-500 rounded text-sm text-red-500 flex items-center justify-between">
           <span>{fileError}</span>
-          <button type="button" onClick={() => setFileError(null)} className="p-0.5 hover:bg-red-100 rounded">
+          <button type="button" onClick={() => setFileError(null)} className="p-0.5 hover:bg-red-900/40 rounded">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
-      <div className="min-w-0 rounded-2xl bg-white/90 p-1.5 backdrop-blur-xl shadow-[0_8px_40px_rgba(0,0,0,0.08),0_2px_12px_rgba(0,0,0,0.04)]">
+      <div className="min-w-0 bg-black border border-[#15803d] p-1 shadow-none">
         <form
           className={cn(
-            "text-secondary-foreground pointer-events-auto relative flex w-full min-w-0 flex-col items-stretch gap-2",
-            "rounded-xl bg-white/95 px-5 py-4",
+            "text-[#22c55e] pointer-events-auto relative flex w-full min-w-0 flex-col items-stretch gap-2",
+            "bg-black px-4 py-3",
             "sm:max-w-3xl"
           )}
           onSubmit={handleSubmit}
@@ -219,22 +202,22 @@ export default function ChatInputForm({
               {attachments.map((att) => (
                 <div
                   key={att.id}
-                  className="relative flex items-center gap-2 px-3 py-2 bg-[#F0F0F0] rounded-lg border border-[#E5E5E5]"
+                  className="relative flex items-center gap-2 px-3 py-2 bg-[#0a0a0a] border border-[#15803d]"
                 >
                   {att.type === "image" ? (
-                    <Image className="w-4 h-4 text-[#333333]" />
+                    <Image className="w-4 h-4 text-[#22c55e]" />
                   ) : (
-                    <FileText className="w-4 h-4 text-[#333333]" />
+                    <FileText className="w-4 h-4 text-[#22c55e]" />
                   )}
-                  <span className="text-xs text-[#1A1A1A] max-w-[100px] truncate">
+                  <span className="text-xs text-[#22c55e] max-w-[100px] truncate">
                     {att.name}
                   </span>
                   <button
                     type="button"
                     onClick={() => onRemoveAttachment(att.id)}
-                    className="ml-1 p-0.5 rounded-full hover:bg-[#E5E5E5] transition-colors"
+                    className="ml-1 p-0.5 hover:bg-[#15803d]/20 transition-colors"
                   >
-                    <X className="w-3 h-3 text-[#1A1A1A]" />
+                    <X className="w-3 h-3 text-[#22c55e]" />
                   </button>
                 </div>
               ))}
@@ -244,7 +227,7 @@ export default function ChatInputForm({
           <div className="flex min-w-0 grow flex-row items-start">
             <textarea
               ref={textareaRef}
-              className="text-foreground placeholder:text-secondary-foreground/60 w-full min-w-0 resize-none bg-transparent text-[17px] leading-7 outline-none disabled:opacity-50"
+              className="text-[#22c55e] placeholder:text-[#15803d] w-full min-w-0 resize-none bg-transparent text-[16px] leading-7 outline-none disabled:opacity-50 font-mono"
               aria-label="Message input"
               placeholder="Type your message here..."
               rows={1}
@@ -256,16 +239,15 @@ export default function ChatInputForm({
             />
           </div>
 
-          <div className="mt-2 flex w-full min-w-0 flex-row-reverse justify-between">
+          <div className="mt-2 flex w-full min-w-0 flex-row-reverse justify-between items-center">
             <div className="-mt-0.5 -mr-0.5 flex shrink-0 items-center justify-center gap-2">
               <button
                 className={cn(
                   "inline-flex items-center justify-center gap-2 text-sm whitespace-nowrap transition-colors",
                   "disabled:cursor-not-allowed disabled:opacity-50",
-                  "shadow-sm",
-                  "bg-[#000000] hover:bg-[#333333] active:bg-[#000000]",
-                  "disabled:hover:bg-[#000000]",
-                  "size-9 relative rounded-lg p-2 text-white font-semibold"
+                  "bg-[#22c55e] hover:bg-[#4ade80] active:bg-[#16a34a] text-black",
+                  "disabled:hover:bg-[#22c55e] disabled:text-black/50",
+                  "size-8 relative rounded-sm p-1 font-bold"
                 )}
                 aria-label="Send message"
                 type="submit"
@@ -276,23 +258,23 @@ export default function ChatInputForm({
             </div>
 
             <div className="flex min-w-0 items-center gap-2">
-              <div className="min-w-0 flex-1 relative">
+              <div className="min-w-0 relative">
                 <button
                   ref={modelButtonRef}
                   className={cn(
                     "justify-center font-medium whitespace-nowrap transition-colors",
                     "disabled:cursor-not-allowed disabled:opacity-50",
-                    "hover:bg-muted/40 hover:text-foreground",
-                    "h-8 rounded-md text-xs relative flex max-w-[150px] min-w-0 items-center gap-1 px-1 py-1.5",
-                    "sm:gap-2 sm:px-2 md:max-w-none text-muted-foreground"
+                    "hover:bg-[#15803d]/20 hover:text-[#4ade80]",
+                    "h-8 rounded-sm text-xs relative flex max-w-[150px] min-w-0 items-center gap-1 px-2 py-1.5",
+                    "border border-[#15803d] text-[#22c55e]"
                   )}
                   type="button"
                   onClick={() => setShowModelSelector(!showModelSelector)}
                 >
-                  <div className="min-w-0 flex-1 text-left text-sm font-medium">
-                    <div className="truncate">{currentModel.name}</div>
+                  <div className="min-w-0 flex-1 text-left text-xs font-bold uppercase truncate">
+                    {currentModel.name}
                   </div>
-                  <ChevronDown className="right-0 size-4" />
+                  <ChevronDown className="right-0 size-3" />
                 </button>
 
                 {showModelSelector && typeof window !== "undefined" && createPortal(
@@ -302,33 +284,33 @@ export default function ChatInputForm({
                       onClick={() => setShowModelSelector(false)}
                     />
                     <div 
-                      className="fixed w-80 bg-white rounded-xl shadow-2xl border border-gray-100 z-[9999] overflow-hidden"
+                      className="fixed w-80 bg-black border border-[#22c55e] z-[9999] overflow-hidden font-mono shadow-[0_0_15px_rgba(34,197,94,0.2)]"
                       style={{
                         bottom: modalPosition.bottom,
                         left: modalPosition.left,
                       }}
                     >
-                      <div className="p-3 border-b border-gray-100">
+                      <div className="p-3 border-b border-[#15803d]">
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#15803d]" />
                           <input
                             type="text"
                             placeholder="Search models..."
                             value={modelSearch}
                             onChange={(e) => setModelSearch(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#000000]/20 focus:border-[#000000]/40"
+                            className="w-full pl-9 pr-3 py-2 text-sm bg-[#0a0a0a] border border-[#15803d] text-[#22c55e] placeholder-[#15803d] focus:outline-none focus:border-[#22c55e]"
                             autoFocus
                           />
                         </div>
                       </div>
-                      <div className="max-h-[320px] overflow-y-auto py-1">
+                      <div className="max-h-[320px] overflow-y-auto py-1 scrollbar-thin scrollbar-thumb-green-900 scrollbar-track-black">
                         {filteredModels.map((model) => (
                           <button
                             key={model.id}
                             type="button"
                             className={cn(
-                              "w-full px-3 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition-colors",
-                              selectedModel === model.id && "bg-[#F0F0F0]"
+                              "w-full px-3 py-2.5 flex items-center gap-3 hover:bg-[#15803d]/20 transition-colors",
+                              selectedModel === model.id && "bg-[#15803d]/40"
                             )}
                             onClick={() => {
                               onModelChange(model.id);
@@ -336,53 +318,26 @@ export default function ChatInputForm({
                               setModelSearch("");
                             }}
                           >
-                            <div className={cn("flex-shrink-0", getIconColor(model.icon))}>
+                            <div className={cn("flex-shrink-0 text-[#22c55e]")}>
                               <ModelIcon icon={model.icon} />
                             </div>
                             <div className="flex-1 text-left">
                               <div className="flex items-center gap-2">
                                 <span className={cn(
-                                  "text-sm font-medium",
-                                  selectedModel === model.id ? "text-[#000000]" : "text-gray-800"
+                                  "text-sm font-bold",
+                                  selectedModel === model.id ? "text-[#22c55e]" : "text-[#22c55e]/80"
                                 )}>
                                   {model.name}
                                 </span>
                                 {model.id.includes(":free") && (
-                                  <span className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-100 text-emerald-700 rounded">
+                                  <span className="px-1.5 py-0.5 text-[10px] font-medium border border-[#22c55e] text-[#22c55e] rounded-sm">
                                     FREE
                                   </span>
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              {model.capabilities.includes("vision") && (
-                                <div className="p-1 rounded bg-sky-100" title="Vision">
-                                  <Eye className="w-3.5 h-3.5 text-sky-600" />
-                                </div>
-                              )}
-                              {model.capabilities.includes("reasoning") && (
-                                <div className="p-1 rounded bg-violet-100" title="Reasoning">
-                                  <Brain className="w-3.5 h-3.5 text-violet-600" />
-                                </div>
-                              )}
-                            </div>
                           </button>
                         ))}
-                        {filteredModels.length === 0 && (
-                          <div className="px-3 py-6 text-center text-sm text-gray-500">
-                            No models found
-                          </div>
-                        )}
-                      </div>
-                      <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-between">
-                        <button
-                          type="button"
-                          className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
-                        >
-                          <span>Show all</span>
-                          <span className="w-2 h-2 rounded-full bg-[#000000]"></span>
-                        </button>
-                        <Filter className="w-4 h-4 text-gray-400" />
                       </div>
                     </div>
                   </>,
@@ -394,11 +349,11 @@ export default function ChatInputForm({
                 <button
                   className={cn(
                     "inline-flex items-center justify-center font-medium whitespace-nowrap transition-colors",
-                    "hover:bg-muted/40 hover:text-foreground",
-                    "text-xs border-secondary-foreground/10 h-8 gap-2 rounded-full border border-solid px-2 sm:px-2.5",
+                    "hover:bg-[#15803d]/20 hover:text-[#4ade80]",
+                    "text-xs h-8 gap-2 rounded-sm border border-[#15803d] px-2 sm:px-2.5",
                     webSearchEnabled
-                      ? "bg-[#000000] text-white border-[#000000]"
-                      : "text-muted-foreground"
+                      ? "bg-[#22c55e] text-black border-[#22c55e] font-bold"
+                      : "text-[#22c55e]"
                   )}
                   type="button"
                   onClick={onWebSearchToggle}
@@ -420,8 +375,8 @@ export default function ChatInputForm({
                 <button
                   className={cn(
                     "inline-flex items-center justify-center font-medium whitespace-nowrap transition-colors",
-                    "hover:bg-muted/40 hover:text-foreground",
-                    "text-xs border-secondary-foreground/10 text-muted-foreground h-8 gap-2 rounded-full border border-solid px-2 sm:px-2.5"
+                    "hover:bg-[#15803d]/20 hover:text-[#4ade80]",
+                    "text-xs border border-[#15803d] text-[#22c55e] h-8 gap-2 rounded-sm px-2 sm:px-2.5"
                   )}
                   type="button"
                   onClick={() => fileInputRef.current?.click()}

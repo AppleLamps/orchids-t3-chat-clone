@@ -21,9 +21,12 @@ const getMessageContent = (message: Message): string => {
 
 const UserMessage = memo(function UserMessage({ content }: { content: string }) {
   return (
-    <div className="flex justify-end">
-      <div className="max-w-[85%] rounded-2xl bg-[#E8E8E8] text-[#333] px-5 py-3">
-        <p className="text-[15px] leading-relaxed break-words">{content}</p>
+    <div className="flex justify-end w-full">
+      <div className="max-w-[85%] pl-4 border-l-2 border-[#22c55e] py-1">
+        <p className="text-[15px] leading-relaxed break-words font-bold text-[#22c55e] font-mono text-right">
+          <span className="mr-2 opacity-50">$</span>
+          {content}
+        </p>
       </div>
     </div>
   );
@@ -31,8 +34,8 @@ const UserMessage = memo(function UserMessage({ content }: { content: string }) 
 
 const AssistantMessage = memo(function AssistantMessage({ content }: { content: string }) {
   return (
-    <div className="flex flex-col">
-      <div className="text-[#1A1A1A] text-[15px]">
+    <div className="flex flex-col w-full">
+      <div className="text-[#22c55e] text-[15px] font-mono">
         <MarkdownRenderer content={content} />
       </div>
     </div>
@@ -42,10 +45,10 @@ const AssistantMessage = memo(function AssistantMessage({ content }: { content: 
 const LoadingIndicator = memo(function LoadingIndicator() {
   return (
     <div className="flex flex-col">
-      <div className="flex gap-1.5 py-2">
-        <span className="w-2 h-2 bg-[#000000] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-        <span className="w-2 h-2 bg-[#000000] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-        <span className="w-2 h-2 bg-[#000000] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+      <div className="flex gap-2 py-2">
+        <span className="w-3 h-3 bg-[#22c55e] animate-bounce" style={{ animationDelay: "0ms" }} />
+        <span className="w-3 h-3 bg-[#22c55e] animate-bounce" style={{ animationDelay: "150ms" }} />
+        <span className="w-3 h-3 bg-[#22c55e] animate-bounce" style={{ animationDelay: "300ms" }} />
       </div>
     </div>
   );
@@ -75,7 +78,7 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-8 px-4 pt-16 pb-8 max-w-3xl mx-auto" role="log" aria-live="polite">
+    <div ref={containerRef} className="flex flex-col gap-8 px-4 pt-8 pb-8 max-w-3xl mx-auto font-mono" role="log" aria-live="polite">
       {messages.map((message) => (
         <div key={message.id}>
           {message.role === "user" ? (

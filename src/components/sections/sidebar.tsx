@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, LogIn, Trash2, MessageSquare } from "lucide-react";
+import { Search, LogIn, Trash2, MessageSquare, Terminal } from "lucide-react";
 import type { Chat } from "@/types/chat";
 import { cn } from "@/lib/utils";
 
@@ -31,49 +31,46 @@ export default function Sidebar({
   return (
     <aside 
       className={cn(
-        "relative h-screen w-[250px] flex-shrink-0 flex-col border-r border-[#E5E5E5] bg-[#F5F5F5] text-[#1A1A1A] font-sans transition-all duration-300 ease-in-out",
+        "relative h-screen w-[250px] flex-shrink-0 flex-col border-r border-[#15803d] bg-black text-[#22c55e] font-mono transition-all duration-300 ease-in-out",
         isOpen ? "md:flex md:translate-x-0" : "md:flex md:-translate-x-full md:w-0 md:border-r-0",
         "hidden"
       )}
     >
-      <div 
-        className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-soft-light"
-        style={{
-          backgroundImage: `url('https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/test-clones/f5b8a575-e4db-4f8a-8172-3a3bd8075b89-t3-chat/assets/images/noise-1.png')`,
-          backgroundRepeat: 'repeat',
-          backgroundSize: '150px' 
-        }}
-      />
-
       <div className="relative z-10 flex h-full flex-col">
-        <div className="flex flex-col space-y-1 m-1 mb-0 p-0 pt-2">
-          <h1 className="flex h-8 shrink-0 items-center justify-center text-lg transition-opacity delay-75 duration-75">
+        <div className="flex flex-col space-y-4 m-0 p-4 pt-4 border-b border-[#15803d]">
+           {/* Window Controls */}
+           <div className="flex gap-2 mb-2">
+            <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
+            <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
+            <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
+          </div>
+
+          <h1 className="flex h-8 shrink-0 items-center text-lg">
             <Link 
               href="/" 
-              className="relative flex h-8 w-24 items-center justify-center text-sm font-semibold text-[#1A1A1A] no-underline"
+              className="relative flex items-center gap-2 text-sm font-bold text-[#22c55e] hover:text-[#4ade80] no-underline transition-colors"
             >
-              <div className="flex h-3.5 items-center justify-center gap-1 select-none">
-                lamps.chat
-              </div>
+              <span className="text-[#22c55e]">{">"}</span>
+              <span>lamps.chat</span>
             </Link>
           </h1>
 
-          <div className="px-1">
+          <div>
             <button
               onClick={onNewChat}
-              className="group inline-flex h-9 w-full items-center justify-center whitespace-nowrap rounded-lg bg-[#000000] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#333333] active:bg-[#000000] no-underline"
+              className="group w-full flex items-center justify-center gap-2 border border-[#22c55e] bg-transparent px-4 py-2 text-sm font-bold text-[#22c55e] hover:bg-[#22c55e] hover:text-black transition-all duration-200 uppercase tracking-wider"
             >
-              New Chat
+              <span>+ New Chat</span>
             </button>
           </div>
 
-          <div className="border-b border-[#E5E5E5] px-3 pt-1">
-            <div className="flex items-center">
-              <Search className="mr-3 -ml-[3px] h-4 w-4 min-w-4 text-[#888888]" />
+          <div className="pt-2">
+            <div className="flex items-center border border-[#15803d] px-2 py-1 bg-black">
+              <span className="text-[#22c55e] mr-2">$</span>
               <input
                 type="search"
-                className="w-full bg-transparent py-2 text-sm text-[#1A1A1A] placeholder-[#888888]/50 outline-none placeholder:select-none focus:outline-none"
-                placeholder="Search your threads..."
+                className="w-full bg-transparent py-1 text-sm text-[#22c55e] placeholder-[#15803d] outline-none focus:outline-none font-mono"
+                placeholder="grep threads..."
                 aria-label="Search threads"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -82,20 +79,20 @@ export default function Sidebar({
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-auto relative py-2 px-1">
+        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-auto relative py-2 px-2 scrollbar-thin scrollbar-thumb-green-900 scrollbar-track-black">
           {displayedChats.map((chat) => (
             <div
               key={chat.id}
               className={cn(
-                "group flex items-center gap-2 rounded-lg px-3 py-2 cursor-pointer transition-colors",
+                "group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors border border-transparent hover:border-[#15803d] hover:bg-[#0a0a0a]",
                 currentChatId === chat.id
-                  ? "bg-[#EBEBEB]"
-                  : "hover:bg-[#EBEBEB]/50"
+                  ? "border-[#22c55e] bg-[#0a0a0a]"
+                  : ""
               )}
               onClick={() => onSelectChat(chat.id)}
             >
-              <MessageSquare className="h-4 w-4 flex-shrink-0 text-[#888888]" />
-              <span className="flex-1 text-sm truncate text-[#1A1A1A]">
+              <span className="text-[#15803d] group-hover:text-[#22c55e]">{">"}</span>
+              <span className="flex-1 text-sm truncate text-[#22c55e]/80 group-hover:text-[#22c55e]">
                 {chat.title}
               </span>
               <button
@@ -103,33 +100,34 @@ export default function Sidebar({
                   e.stopPropagation();
                   onDeleteChat(chat.id);
                 }}
-                className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#E5E5E5] transition-all"
+                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-all"
               >
-                <Trash2 className="h-3 w-3 text-[#888888]" />
+                <Trash2 className="h-3 w-3" />
               </button>
             </div>
           ))}
           {displayedChats.length === 0 && chats.length === 0 && (
-            <p className="text-xs text-[#888888] text-center py-4">
-              No chats yet. Start a new conversation!
-            </p>
+            <div className="p-4 text-xs text-[#15803d] font-mono">
+              <p className="mb-1">// No chats yet.</p>
+              <p>// Start a new conversation!</p>
+            </div>
           )}
           {displayedChats.length === 0 && chats.length > 0 && searchQuery && (
-            <p className="text-xs text-[#888888] text-center py-4">
-              No matching chats found.
-            </p>
+            <div className="p-4 text-xs text-[#15803d] font-mono">
+              <p>// No matching chats found.</p>
+            </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-2 m-0 p-2 pt-0">
+        <div className="flex flex-col gap-2 m-0 p-4 border-t border-[#15803d]">
           <a
             href="https://x.com/lamps_apple"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex w-full items-center gap-4 rounded-lg p-4 text-[#888888] hover:bg-[#EBEBEB] transition-colors select-none no-underline"
+            className="flex w-full items-center gap-2 text-[#15803d] hover:text-[#22c55e] transition-colors select-none no-underline text-xs"
           >
-            <LogIn className="h-4 w-4" />
-            <span className="text-sm font-medium">API costs covered by Apple Lamps</span>
+            <span>{"->"}</span>
+            <span className="font-medium">API costs covered by Apple Lamps</span>
           </a>
         </div>
       </div>

@@ -37,7 +37,7 @@ export function ChatWrapper() {
   } = useChatStore();
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
+    <div className="flex h-screen w-full overflow-hidden bg-black font-mono">
       <MobileWarning />
       <Sidebar
         chats={chats}
@@ -55,9 +55,14 @@ export function ChatWrapper() {
       
       <MainContainer sidebarOpen={sidebarOpen}>
         <div className="relative flex h-full flex-col">
+          {/* Terminal Title Bar */}
+          <div className="flex min-h-[40px] w-full items-center justify-center border-b border-[#15803d] bg-black text-xs text-[#15803d] font-bold select-none z-40 uppercase tracking-widest">
+            lamps.chat — zsh — 80x24
+          </div>
+
           <TopRightSettings />
           
-          <div className="flex-1 overflow-y-auto pb-[200px]">
+          <div className="flex-1 overflow-y-auto pb-[200px] scrollbar-thin scrollbar-thumb-green-900 scrollbar-track-black">
             {currentChat ? (
               <ChatMessages 
                 messages={currentChat.messages} 

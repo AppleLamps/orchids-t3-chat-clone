@@ -26,14 +26,15 @@ interface WelcomeHeaderProps {
 
 export default function WelcomeHeader({ onSendMessage, selectedCategory, onCategoryChange }: WelcomeHeaderProps) {
   return (
-    <div className="pt-8 mx-auto flex w-full max-w-3xl flex-col px-4 pb-10">
+    <div className="pt-8 mx-auto flex w-full max-w-3xl flex-col px-4 pb-10 font-mono">
       <div className="flex min-h-[calc(100vh-20rem)] items-start justify-center">
-        <div className="w-full space-y-6 px-2 pt-[calc(max(15vh,2.5rem))] sm:px-8">
-          <h2 className="text-3xl font-semibold text-foreground">
+        <div className="w-full space-y-8 px-2 pt-[calc(max(15vh,2.5rem))] sm:px-8">
+          <h2 className="text-4xl font-bold text-[#22c55e] tracking-tight">
+            <span className="mr-2 text-[#22c55e]">$</span>
             How can I help you?
           </h2>
 
-          <div className="flex flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly">
+          <div className="flex flex-row flex-wrap gap-3 text-sm max-sm:justify-evenly">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isSelected = selectedCategory === tab.id;
@@ -44,35 +45,35 @@ export default function WelcomeHeader({ onSendMessage, selectedCategory, onCateg
                   onClick={() => onCategoryChange(tab.id)}
                   data-selected={isSelected}
                   className={cn(
-                    "flex items-center gap-1 rounded-xl px-5 py-2 h-9",
-                    "sm:gap-2 sm:rounded-full",
-                    "justify-center text-sm font-semibold whitespace-nowrap",
-                    "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
-                    "shadow-sm backdrop-blur-xl transition-colors",
-                    "outline-1 outline-secondary/70",
-                    "data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground",
-                    "data-[selected=false]:bg-secondary/30 data-[selected=false]:text-secondary-foreground/90",
-                    "data-[selected=false]:hover:bg-secondary data-[selected=false]:outline-solid",
-                    "focus-visible:ring-ring focus-visible:ring-1 focus-visible:outline-hidden"
+                    "flex items-center gap-2 px-6 py-2 border border-[#15803d]",
+                    "justify-center text-sm font-bold whitespace-nowrap",
+                    "transition-all duration-200",
+                    "hover:bg-[#15803d]/20 hover:border-[#22c55e]",
+                    "focus-visible:ring-1 focus-visible:ring-[#22c55e] focus-visible:outline-none",
+                    isSelected 
+                      ? "bg-[#22c55e] text-black border-[#22c55e]" 
+                      : "bg-transparent text-[#22c55e]"
                   )}
                 >
-                  <Icon />
+                  <Icon className="w-4 h-4" />
                   <div>{tab.label}</div>
                 </button>
               );
             })}
           </div>
 
-          <div className="flex w-full flex-col divide-y divide-border/50">
+          <div className="flex w-full flex-col space-y-4">
             {SUGGESTED_QUESTIONS.map((question) => (
-              <button
-                key={question}
-                onClick={() => onSendMessage(question)}
-                className="text-secondary-foreground hover:text-primary w-full py-3 sm:py-4 text-left text-base font-normal transition-colors outline-none focus-visible:text-primary"
-                type="button"
-              >
-                {question}
-              </button>
+              <div key={question} className="border-b border-[#15803d]/30 pb-2">
+                <button
+                  onClick={() => onSendMessage(question)}
+                  className="text-[#22c55e]/80 hover:text-[#22c55e] hover:translate-x-1 w-full text-left text-base font-medium transition-all duration-200 outline-none flex items-center gap-2"
+                  type="button"
+                >
+                  <span className="opacity-50">{">"}</span>
+                  {question}
+                </button>
+              </div>
             ))}
           </div>
         </div>
