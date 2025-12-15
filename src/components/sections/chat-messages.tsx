@@ -22,9 +22,9 @@ const getMessageContent = (message: Message): string => {
 const UserMessage = memo(function UserMessage({ content }: { content: string }) {
   return (
     <div className="flex justify-end w-full">
-      <div className="max-w-[85%] pl-4 border-l-2 border-[#22c55e] py-1">
-        <p className="text-[15px] leading-relaxed break-words font-bold text-[#22c55e] font-mono text-right">
-          <span className="mr-2 opacity-50">$</span>
+      <div className="max-w-[85%] py-2 border-r-2 border-[#00ff41] pr-4">
+        <p className="text-[14px] leading-relaxed break-words text-[#00ff41] text-right">
+          <span className="text-[#00cc33] mr-2">$</span>
           {content}
         </p>
       </div>
@@ -35,7 +35,7 @@ const UserMessage = memo(function UserMessage({ content }: { content: string }) 
 const AssistantMessage = memo(function AssistantMessage({ content }: { content: string }) {
   return (
     <div className="flex flex-col w-full">
-      <div className="text-[#22c55e] text-[15px] font-mono">
+      <div className="text-[#00ff41] text-[14px]">
         <MarkdownRenderer content={content} />
       </div>
     </div>
@@ -46,9 +46,9 @@ const LoadingIndicator = memo(function LoadingIndicator() {
   return (
     <div className="flex flex-col">
       <div className="flex gap-2 py-2">
-        <span className="w-3 h-3 bg-[#22c55e] animate-bounce" style={{ animationDelay: "0ms" }} />
-        <span className="w-3 h-3 bg-[#22c55e] animate-bounce" style={{ animationDelay: "150ms" }} />
-        <span className="w-3 h-3 bg-[#22c55e] animate-bounce" style={{ animationDelay: "300ms" }} />
+        <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "0ms" }} />
+        <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "150ms" }} />
+        <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "300ms" }} />
       </div>
     </div>
   );
@@ -78,7 +78,13 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   }
 
   return (
-    <div ref={containerRef} className="flex flex-col gap-8 px-4 pt-8 pb-8 max-w-3xl mx-auto font-mono" role="log" aria-live="polite">
+    <div 
+      ref={containerRef} 
+      className="flex flex-col gap-8 p-10 max-w-[700px] mx-auto" 
+      role="log" 
+      aria-live="polite"
+      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+    >
       {messages.map((message) => (
         <div key={message.id}>
           {message.role === "user" ? (

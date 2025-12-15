@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Search, LogIn, Trash2, MessageSquare, Terminal } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import type { Chat } from "@/types/chat";
 import { cn } from "@/lib/utils";
 
@@ -31,68 +31,59 @@ export default function Sidebar({
   return (
     <aside 
       className={cn(
-        "relative h-screen w-[250px] flex-shrink-0 flex-col border-r border-[#15803d] bg-black text-[#22c55e] font-mono transition-all duration-300 ease-in-out",
+        "relative h-screen w-[240px] flex-shrink-0 flex-col bg-[#111111] border-r border-[#00ff4130] transition-all duration-300 ease-in-out",
         isOpen ? "md:flex md:translate-x-0" : "md:flex md:-translate-x-full md:w-0 md:border-r-0",
         "hidden"
       )}
+      style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
-      <div className="relative z-10 flex h-full flex-col">
-        <div className="flex flex-col space-y-4 m-0 p-4 pt-4 border-b border-[#15803d]">
-           {/* Window Controls */}
-           <div className="flex gap-2 mb-2">
-            <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 transition-colors"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 transition-colors"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 transition-colors"></div>
-          </div>
-
-          <h1 className="flex h-8 shrink-0 items-center text-lg">
-            <Link 
-              href="/" 
-              className="relative flex items-center gap-2 text-sm font-bold text-[#22c55e] hover:text-[#4ade80] no-underline transition-colors"
-            >
-              <span className="text-[#22c55e]">{">"}</span>
-              <span>lamps.chat</span>
-            </Link>
-          </h1>
-
-          <div>
-            <button
-              onClick={onNewChat}
-              className="group w-full flex items-center justify-center gap-2 border border-[#22c55e] bg-transparent px-4 py-2 text-sm font-bold text-[#22c55e] hover:bg-[#22c55e] hover:text-black transition-all duration-200 uppercase tracking-wider"
-            >
-              <span>+ New Chat</span>
-            </button>
-          </div>
-
-          <div className="pt-2">
-            <div className="flex items-center border border-[#15803d] px-2 py-1 bg-black">
-              <span className="text-[#22c55e] mr-2">$</span>
-              <input
-                type="search"
-                className="w-full bg-transparent py-1 text-sm text-[#22c55e] placeholder-[#15803d] outline-none focus:outline-none font-mono"
-                placeholder="grep threads..."
-                aria-label="Search threads"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
+      <div className="flex h-full flex-col p-4">
+        {/* Logo */}
+        <div className="text-center mb-5">
+          <Link 
+            href="/" 
+            className="text-[16px] font-bold text-[#00ff41] no-underline green-glow"
+          >
+            <span className="text-[#00cc33]">{"> "}</span>
+            lamps.chat
+          </Link>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-auto relative py-2 px-2 scrollbar-thin scrollbar-thumb-green-900 scrollbar-track-black">
+        {/* New Chat Button */}
+        <button
+          onClick={onNewChat}
+          className="w-full bg-[#00ff4120] border border-[#00ff41] text-[#00ff41] py-3 px-4 text-[14px] font-medium cursor-pointer transition-all duration-200 green-glow hover:bg-[#00ff41] hover:text-[#0a0a0a] hover:green-glow-box"
+        >
+          + New Chat
+        </button>
+
+        {/* Search Input */}
+        <input
+          type="text"
+          className="mt-4 w-full bg-[#1a1a1a] border border-[#00ff4130] text-[#00ff41] py-2.5 px-3 text-[12px] outline-none placeholder:text-[#00ff4180] focus:border-[#00ff41] focus:green-glow-box transition-all"
+          placeholder="$ grep threads..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+
+        {/* Chat List */}
+        <div className="flex-1 overflow-auto py-4">
           {displayedChats.map((chat) => (
             <div
               key={chat.id}
               className={cn(
-                "group flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors border border-transparent hover:border-[#15803d] hover:bg-[#0a0a0a]",
+                "group flex items-center gap-2 py-2 px-2 cursor-pointer transition-all duration-200 border-b border-[#00ff4130]",
                 currentChatId === chat.id
-                  ? "border-[#22c55e] bg-[#0a0a0a]"
-                  : ""
+                  ? "bg-[#00ff4120] text-[#00ff41]"
+                  : "text-[#00ff4180] hover:text-[#00ff41] hover:pl-3"
               )}
               onClick={() => onSelectChat(chat.id)}
             >
-              <span className="text-[#15803d] group-hover:text-[#22c55e]">{">"}</span>
-              <span className="flex-1 text-sm truncate text-[#22c55e]/80 group-hover:text-[#22c55e]">
+              <span className={cn(
+                "text-[#00cc33] opacity-0 transition-opacity duration-200",
+                currentChatId === chat.id ? "opacity-100" : "group-hover:opacity-100"
+              )}>→</span>
+              <span className="flex-1 text-[13px] truncate">
                 {chat.title}
               </span>
               <button
@@ -100,34 +91,35 @@ export default function Sidebar({
                   e.stopPropagation();
                   onDeleteChat(chat.id);
                 }}
-                className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 transition-all"
+                className="opacity-0 group-hover:opacity-100 p-1 text-[#00ff4180] hover:text-[#ff5f57] transition-all"
               >
                 <Trash2 className="h-3 w-3" />
               </button>
             </div>
           ))}
+          
           {displayedChats.length === 0 && chats.length === 0 && (
-            <div className="p-4 text-xs text-[#15803d] font-mono">
-              <p className="mb-1">// No chats yet.</p>
-              <p>// Start a new conversation!</p>
+            <div className="flex-1 flex items-center justify-center text-[11px] text-[#00ff4180] text-center p-5">
+              <span>// No chats yet. Start a new conversation!</span>
             </div>
           )}
           {displayedChats.length === 0 && chats.length > 0 && searchQuery && (
-            <div className="p-4 text-xs text-[#15803d] font-mono">
-              <p>// No matching chats found.</p>
+            <div className="flex-1 flex items-center justify-center text-[11px] text-[#00ff4180] text-center p-5">
+              <span>// No matching chats found.</span>
             </div>
           )}
         </div>
 
-        <div className="flex flex-col gap-2 m-0 p-4 border-t border-[#15803d]">
-          <a
+        {/* Footer */}
+        <div className="text-[10px] text-[#00ff4180] text-center pt-4 border-t border-[#00ff4130]">
+          API costs covered by<br/>
+          <a 
             href="https://x.com/lamps_apple"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex w-full items-center gap-2 text-[#15803d] hover:text-[#22c55e] transition-colors select-none no-underline text-xs"
+            className="text-[#00cc33] no-underline hover:text-[#00ff41]"
           >
-            <span>{"->"}</span>
-            <span className="font-medium">API costs covered by Apple Lamps</span>
+            Apple Lamps
           </a>
         </div>
       </div>

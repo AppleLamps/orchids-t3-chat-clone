@@ -1,69 +1,69 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-background: #050505;
-  --color-foreground: #22c55e;
+  --color-background: #0a0a0a;
+  --color-foreground: #00ff41;
 
-  --color-card: #050505;
-  --color-card-foreground: #22c55e;
+  --color-card: #0a0a0a;
+  --color-card-foreground: #00ff41;
 
-  --color-popover: #050505;
-  --color-popover-foreground: #22c55e;
+  --color-popover: #111111;
+  --color-popover-foreground: #00ff41;
 
-  --color-primary: #22c55e;
-  --color-primary-foreground: #000000;
-  --color-primary-hover: #16a34a;
+  --color-primary: #00ff41;
+  --color-primary-foreground: #0a0a0a;
+  --color-primary-hover: #00cc33;
 
-  --color-secondary: #0a0a0a;
-  --color-secondary-foreground: #22c55e;
+  --color-secondary: #111111;
+  --color-secondary-foreground: #00ff41;
 
-  --color-muted: #171717;
-  --color-muted-foreground: #15803d;
+  --color-muted: #1a1a1a;
+  --color-muted-foreground: #00ff4180;
 
-  --color-accent: #0a0a0a;
-  --color-accent-foreground: #22c55e;
+  --color-accent: #1a1a1a;
+  --color-accent-foreground: #00ff41;
 
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #fafafa;
+  --color-destructive: #ff5f57;
+  --color-destructive-foreground: #0a0a0a;
 
-  --color-border: #15803d;
-  --color-input: #050505;
-  --color-input-border: #15803d;
-  --color-ring: #22c55e;
+  --color-border: #00ff4130;
+  --color-input: #1a1a1a;
+  --color-input-border: #00ff4130;
+  --color-ring: #00ff41;
 
-  --color-chart-1: #22c55e;
-  --color-chart-2: #16a34a;
-  --color-chart-3: #15803d;
-  --color-chart-4: #4ade80;
-  --color-chart-5: #86efac;
+  --color-chart-1: #00ff41;
+  --color-chart-2: #00cc33;
+  --color-chart-3: #00ff4180;
+  --color-chart-4: #00ff4140;
+  --color-chart-5: #00ff4120;
 
-  --color-sidebar: #000000;
-  --color-sidebar-foreground: #22c55e;
-  --color-sidebar-primary: #22c55e;
-  --color-sidebar-primary-foreground: #000000;
-  --color-sidebar-accent: #0a0a0a;
-  --color-sidebar-accent-foreground: #22c55e;
-  --color-sidebar-border: #15803d;
-  --color-sidebar-ring: #22c55e;
+  --color-sidebar: #111111;
+  --color-sidebar-foreground: #00ff41;
+  --color-sidebar-primary: #00ff41;
+  --color-sidebar-primary-foreground: #0a0a0a;
+  --color-sidebar-accent: #1a1a1a;
+  --color-sidebar-accent-foreground: #00ff41;
+  --color-sidebar-border: #00ff4130;
+  --color-sidebar-ring: #00ff41;
 
-  --color-link: #22c55e;
-  --color-link-hover: #4ade80;
+  --color-link: #00ff41;
+  --color-link-hover: #00cc33;
 
-  --radius-xs: 0.25rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
 
-  --font-sans: "Courier New", Courier, monospace;
-  --font-body: "Courier New", Courier, monospace;
-  --font-heading: "Courier New", Courier, monospace;
-  --font-mono: "Courier New", Courier, monospace;
+  --font-sans: 'JetBrains Mono', monospace;
+  --font-body: 'JetBrains Mono', monospace;
+  --font-heading: 'JetBrains Mono', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -101,61 +101,98 @@
     font-family: var(--font-body);
   }
   
-  .scanlines {
-    background: linear-gradient(
-      to bottom,
-      rgba(255,255,255,0),
-      rgba(255,255,255,0) 50%,
-      rgba(0,0,0,0.2) 50%,
-      rgba(0,0,0,0.2)
-    );
-    background-size: 100% 4px;
-    pointer-events: none;
+  /* Scanline effect */
+  .scanlines::before {
+    content: '';
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 9999;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 255, 65, 0.03) 2px,
+      rgba(0, 255, 65, 0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+  
+  /* Green glow effect */
+  .green-glow {
+    text-shadow: 0 0 10px #00ff4140, 0 0 20px #00ff4120;
+  }
+  
+  .green-glow-box {
+    box-shadow: 0 0 10px #00ff4140, 0 0 20px #00ff4120;
+  }
+  
+  /* Blinking cursor */
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+  
+  .cursor-blink {
+    display: inline-block;
+    width: 10px;
+    height: 24px;
+    background: #00ff41;
+    animation: blink 1s infinite;
+    vertical-align: middle;
+    margin-left: 4px;
   }
 }
 
 @layer base {
   :root {
-    --background: #050505;
-    --foreground: #22c55e;
-    --card: #050505;
-    --card-foreground: #22c55e;
-    --popover: #050505;
-    --popover-foreground: #22c55e;
-    --primary: #22c55e;
-    --primary-foreground: #000000;
-    --secondary: #0a0a0a;
-    --secondary-foreground: #22c55e;
-    --muted: #171717;
-    --muted-foreground: #15803d;
-    --accent: #0a0a0a;
-    --accent-foreground: #22c55e;
-    --destructive: #ef4444;
-    --destructive-foreground: #fafafa;
-    --border: #15803d;
-    --input: #050505;
-    --ring: #22c55e;
-    --chart-1: #22c55e;
-    --chart-2: #16a34a;
-    --chart-3: #15803d;
-    --chart-4: #4ade80;
-    --chart-5: #86efac;
-    --radius: 0rem; /* Terminal style usually has sharp corners, or small radius */
+    --background: #0a0a0a;
+    --foreground: #00ff41;
+    --card: #0a0a0a;
+    --card-foreground: #00ff41;
+    --popover: #111111;
+    --popover-foreground: #00ff41;
+    --primary: #00ff41;
+    --primary-foreground: #0a0a0a;
+    --secondary: #111111;
+    --secondary-foreground: #00ff41;
+    --muted: #1a1a1a;
+    --muted-foreground: #00ff4180;
+    --accent: #1a1a1a;
+    --accent-foreground: #00ff41;
+    --destructive: #ff5f57;
+    --destructive-foreground: #0a0a0a;
+    --border: #00ff4130;
+    --input: #1a1a1a;
+    --ring: #00ff41;
+    --chart-1: #00ff41;
+    --chart-2: #00cc33;
+    --chart-3: #00ff4180;
+    --chart-4: #00ff4140;
+    --chart-5: #00ff4120;
+    --radius: 0;
     
-    --sidebar-background: #000000;
-    --sidebar-foreground: #22c55e;
-    --sidebar-primary: #22c55e;
-    --sidebar-primary-foreground: #000000;
-    --sidebar-accent: #0a0a0a;
-    --sidebar-accent-foreground: #22c55e;
-    --sidebar-border: #15803d;
-    --sidebar-ring: #22c55e;
+    --sidebar-background: #111111;
+    --sidebar-foreground: #00ff41;
+    --sidebar-primary: #00ff41;
+    --sidebar-primary-foreground: #0a0a0a;
+    --sidebar-accent: #1a1a1a;
+    --sidebar-accent-foreground: #00ff41;
+    --sidebar-border: #00ff4130;
+    --sidebar-ring: #00ff41;
+    
+    /* Terminal specific */
+    --green-primary: #00ff41;
+    --green-secondary: #00cc33;
+    --green-dim: #00ff4120;
+    --green-glow: 0 0 10px #00ff4140, 0 0 20px #00ff4120;
+    --text-dim: #00ff4180;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #111111;
+    --bg-tertiary: #1a1a1a;
+    --border-color: #00ff4130;
   }
 
   * {
@@ -165,57 +202,56 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss05" on;
-    letter-spacing: 0.015em;
   }
 
   h1 {
-    font-size: 1.875rem;
+    font-size: 32px;
     font-weight: 600;
     line-height: 1.2;
-    color: var(--color-foreground);
+    color: var(--green-primary);
+    text-shadow: var(--green-glow);
   }
 
   h2 {
     font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.4;
-    color: var(--color-foreground);
+    color: var(--green-primary);
   }
 
   p {
     font-size: 1rem;
     font-weight: 400;
     line-height: 1.5;
-    color: var(--color-foreground);
-    opacity: 0.9;
+    color: var(--green-primary);
   }
 
   a {
-    color: var(--color-link);
+    color: var(--green-primary);
     text-decoration: underline;
   }
 
   a:hover {
-    color: var(--color-link-hover);
+    color: var(--green-secondary);
   }
   
-  /* Custom scrollbar for terminal look */
+  /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
   
   ::-webkit-scrollbar-track {
-    background: #000; 
+    background: var(--bg-primary);
   }
   
   ::-webkit-scrollbar-thumb {
-    background: #15803d; 
-    border: 1px solid #000;
+    background: var(--border-color);
+    border: 1px solid var(--bg-primary);
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    background: #22c55e; 
+    background: var(--green-primary);
   }
 }
 

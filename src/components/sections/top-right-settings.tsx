@@ -5,12 +5,13 @@ import { cn } from "@/lib/utils";
 
 export default function TopRightSettings() {
   return (
-    <div className="absolute right-6 top-10 z-30 flex items-center gap-3">
+    <div className="absolute right-6 top-6 z-30 flex items-center gap-3">
       <button
         className={cn(
-          "inline-flex size-9 items-center justify-center rounded-sm border border-[#15803d] bg-transparent text-[#22c55e]",
-          "hover:bg-[#15803d]/20 hover:text-[#4ade80]",
-          "focus-visible:ring-1 focus-visible:outline-hidden focus-visible:ring-[#22c55e]"
+          "inline-flex size-8 items-center justify-center",
+          "bg-[#1a1a1a] border border-[#00ff4130] text-[#00ff4180]",
+          "hover:border-[#00ff41] hover:text-[#00ff41] hover:shadow-[0_0_10px_#00ff4140]",
+          "transition-all duration-200"
         )}
         aria-label="Settings"
       >
