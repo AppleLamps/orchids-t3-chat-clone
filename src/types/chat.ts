@@ -39,8 +39,18 @@ export interface Attachment {
   id: string;
   type: "image" | "pdf";
   name: string;
-  data: string;
   mimeType: string;
+  size: number;
+  /**
+   * File is intentionally kept out of persisted chat history (localStorage quota).
+   * We only convert to Base64/DataURL at send-time.
+   */
+  file: File;
+  /**
+   * Optional object URL for lightweight previews in the composer.
+   * Must be revoked when removing/clearing attachments.
+   */
+  previewUrl?: string;
 }
 
 export const MODELS = [

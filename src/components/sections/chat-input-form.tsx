@@ -134,25 +134,19 @@ export default function ChatInputForm({
           continue;
         }
 
-        const reader = new FileReader();
-        reader.onerror = () => {
-          setFileError(`Failed to read file: ${file.name}`);
-        };
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          const isImage = file.type.startsWith("image/");
-          const isPdf = file.type === "application/pdf";
+        const isImage = file.type.startsWith("image/");
+        const isPdf = file.type === "application/pdf";
 
-          if (isImage || isPdf) {
-            onAddAttachment({
-              type: isImage ? "image" : "pdf",
-              name: file.name,
-              data: dataUrl,
-              mimeType: file.type,
-            });
-          }
-        };
-        reader.readAsDataURL(file);
+        if (isImage || isPdf) {
+          onAddAttachment({
+            type: isImage ? "image" : "pdf",
+            name: file.name,
+            mimeType: file.type,
+            size: file.size,
+            file,
+            previewUrl: isImage ? URL.createObjectURL(file) : undefined,
+          });
+        }
       }
       e.target.value = "";
     },

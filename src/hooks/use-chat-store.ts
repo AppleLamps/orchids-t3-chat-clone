@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import type { Chat, Message, ModelId, Attachment } from "@/types/chat";
+import { create } from "zustand";
+import { subscribeWithSelector } from "zustand/middleware";
+import type { Chat, Message, ModelId, Attachment, MessageContent } from "@/types/chat";
 import { MODELS } from "@/types/chat";
 
 export type CategoryId = "create" | "explore" | "code" | "learn";
@@ -25,6 +26,9 @@ For other code requests:
 };
 
 const STORAGE_KEY = "t3-chat-history";
+const STORAGE_DEBOUNCE_MS = 600;
+// Keep well below typical 5MB per-origin limits.
+const MAX_STORAGE_BYTES_APPROX = 4_000_000;
 
 function generateId() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -50,73 +54,173 @@ function loadChatsFromStorage(): Chat[] {
   }
 }
 
+function isQuotaExceededError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  // DOMException name is "QuotaExceededError" in most browsers; message varies.
+  return error.name === "QuotaExceededError" || /quota/i.test(error.message);
+}
+
+function approximateUtf16Bytes(text: string): number {
+  // JS strings are UTF-16; 2 bytes per code unit is a decent approximation for quota sizing.
+  return text.length * 2;
+}
+
+function normalizeMessageContentForStorage(content: MessageContent): string {
+  if (typeof content === "string") return content;
+  return content
+    .filter((c) => c.type === "text")
+    .map((c) => ("text" in c ? c.text : ""))
+    .join("");
+}
+
+function sanitizeChatsForStorage(chats: Chat[]): Chat[] {
+  // Prevent accidental persistence of large/binary fields (e.g., image/file payloads).
+  // The UI currently renders only text content anyway.
+  return chats.map((chat) => ({
+    ...chat,
+    messages: chat.messages.map((m) => ({
+      ...m,
+      content: normalizeMessageContentForStorage(m.content),
+    })),
+  }));
+}
+
+function pruneChatsToFit(chats: Chat[]): Chat[] {
+  // Drop oldest chats until we fit. Chats are stored newest-first in this app.
+  let pruned = [...chats];
+  while (pruned.length > 0) {
+    const candidate = JSON.stringify(pruned);
+    if (approximateUtf16Bytes(candidate) <= MAX_STORAGE_BYTES_APPROX) return pruned;
+    pruned = pruned.slice(0, -1);
+  }
+  return [];
+}
+
 function saveChatsToStorage(chats: Chat[]) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chats));
+    const sanitized = sanitizeChatsForStorage(chats);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
   } catch (e) {
+    if (isQuotaExceededError(e)) {
+      try {
+        const pruned = pruneChatsToFit(sanitizeChatsForStorage(chats));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(pruned));
+        return;
+      } catch (e2) {
+        console.error("Failed to save pruned chats to localStorage:", e2);
+        return;
+      }
+    }
     console.error("Failed to save chats to localStorage:", e);
   }
 }
 
-export function useChatStore() {
-  const [chats, setChats] = useState<Chat[]>([]);
-  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<ModelId>(
-    MODELS.find((m) => m.isDefault)?.id ?? MODELS[0].id
-  );
-  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [attachments, setAttachments] = useState<Attachment[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<CategoryId | null>(null);
+type StreamingState = {
+  chatId: string | null;
+  messageId: string | null;
+  content: string;
+};
 
-  useEffect(() => {
-    setChats(loadChatsFromStorage());
-  }, []);
+interface ChatStoreState {
+  chats: Chat[];
+  currentChatId: string | null;
+  selectedModel: ModelId;
+  webSearchEnabled: boolean;
+  isLoading: boolean;
+  attachments: Attachment[];
+  selectedCategory: CategoryId | null;
+  streaming: StreamingState;
 
-  useEffect(() => {
-    if (chats.length > 0) {
-      saveChatsToStorage(chats);
+  setSelectedModel: (model: ModelId) => void;
+  toggleWebSearchEnabled: () => void;
+  setSelectedCategory: (category: CategoryId | null) => void;
+
+  createNewChat: () => void;
+  addAttachment: (attachment: Omit<Attachment, "id">) => void;
+  removeAttachment: (id: string) => void;
+  clearAttachments: () => void;
+
+  sendMessage: (content: string) => Promise<void>;
+  selectChat: (chatId: string) => void;
+  deleteChat: (chatId: string) => void;
+  clearCurrentChatHistory: () => void;
+  searchChats: (query: string) => Chat[];
+}
+
+function revokePreviewUrl(attachment: Attachment) {
+  if (typeof window === "undefined") return;
+  if (attachment.previewUrl) {
+    try {
+      URL.revokeObjectURL(attachment.previewUrl);
+    } catch {
+      // ignore
     }
-  }, [chats]);
+  }
+}
 
-  const currentChat = chats.find((c) => c.id === currentChatId) ?? null;
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onload = () => resolve(String(reader.result ?? ""));
+    reader.readAsDataURL(file);
+  });
+}
 
-  const createNewChat = useCallback(() => {
-    setCurrentChatId(null);
-    setAttachments([]);
-    setSelectedCategory(null);
-  }, []);
+export const useChatStore = create<ChatStoreState>()(
+  subscribeWithSelector((set, get) => ({
+    chats: typeof window === "undefined" ? [] : loadChatsFromStorage(),
+    currentChatId: null,
+    selectedModel: MODELS.find((m) => m.isDefault)?.id ?? MODELS[0].id,
+    webSearchEnabled: false,
+    isLoading: false,
+    attachments: [],
+    selectedCategory: null,
+    streaming: { chatId: null, messageId: null, content: "" },
 
-  const addAttachment = useCallback((attachment: Omit<Attachment, "id">) => {
-    setAttachments((prev) => [...prev, { ...attachment, id: generateId() }]);
-  }, []);
+    setSelectedModel: (model) => set({ selectedModel: model }),
+    toggleWebSearchEnabled: () => set((s) => ({ webSearchEnabled: !s.webSearchEnabled })),
+    setSelectedCategory: (category) => set({ selectedCategory: category }),
 
-  const removeAttachment = useCallback((id: string) => {
-    setAttachments((prev) => prev.filter((a) => a.id !== id));
-  }, []);
+    createNewChat: () => {
+      const { attachments } = get();
+      attachments.forEach(revokePreviewUrl);
+      set({ currentChatId: null, attachments: [], selectedCategory: null, streaming: { chatId: null, messageId: null, content: "" } });
+    },
 
-  const clearAttachments = useCallback(() => {
-    setAttachments([]);
-  }, []);
+    addAttachment: (attachment) => {
+      set((s) => ({ attachments: [...s.attachments, { ...attachment, id: generateId() }] }));
+    },
 
-  const sendMessage = useCallback(
-    async (content: string) => {
-      if (!content.trim() && attachments.length === 0) return;
+    removeAttachment: (id) => {
+      const { attachments } = get();
+      const toRemove = attachments.find((a) => a.id === id);
+      if (toRemove) revokePreviewUrl(toRemove);
+      set((s) => ({ attachments: s.attachments.filter((a) => a.id !== id) }));
+    },
 
-      setIsLoading(true);
+    clearAttachments: () => {
+      const { attachments } = get();
+      attachments.forEach(revokePreviewUrl);
+      set({ attachments: [] });
+    },
 
-      let chatId = currentChatId;
-      let updatedChats = [...chats];
+    sendMessage: async (content: string) => {
+      const state = get();
+      if (!content.trim() && state.attachments.length === 0) return;
+
+      set({ isLoading: true });
 
       const userMessageId = generateId();
       const userMessage: Message = {
         id: userMessageId,
         role: "user",
-        content: content,
+        content,
         createdAt: new Date(),
       };
 
+      let chatId = state.currentChatId;
       if (!chatId) {
         chatId = generateId();
         const newChat: Chat = {
@@ -126,47 +230,63 @@ export function useChatStore() {
           createdAt: new Date(),
           updatedAt: new Date(),
         };
-        updatedChats = [newChat, ...updatedChats];
-        setCurrentChatId(chatId);
+        set((s) => ({ chats: [newChat, ...s.chats], currentChatId: chatId }));
       } else {
-        updatedChats = updatedChats.map((chat) =>
+        set((s) => ({
+          chats: s.chats.map((chat) =>
+            chat.id === chatId
+              ? { ...chat, messages: [...chat.messages, userMessage], updatedAt: new Date() }
+              : chat
+          ),
+        }));
+      }
+
+      const assistantMessageId = generateId();
+      set((s) => ({
+        chats: s.chats.map((chat) =>
           chat.id === chatId
             ? {
                 ...chat,
-                messages: [...chat.messages, userMessage],
-                updatedAt: new Date(),
+                messages: [
+                  ...chat.messages,
+                  { id: assistantMessageId, role: "assistant" as const, content: "", createdAt: new Date() },
+                ],
               }
             : chat
-        );
-      }
-
-      setChats(updatedChats);
+        ),
+        streaming: { chatId, messageId: assistantMessageId, content: "" },
+      }));
 
       try {
-        const messagesForApi = updatedChats
-          .find((c) => c.id === chatId)!
-          .messages.map((msg) => {
-            if (msg.id === userMessageId && attachments.length > 0) {
-              const contentParts: Array<{type: string; text?: string; image_url?: {url: string}; file?: {filename: string; file_data: string}}> = [];
-              
+        const { selectedModel, selectedCategory, attachments } = get();
+
+        const chat = get().chats.find((c) => c.id === chatId);
+        if (!chat) throw new Error("Chat not found");
+
+        // Convert files at send-time (avoid Base64 in state/localStorage).
+        const attachmentData = await Promise.all(
+          attachments.map(async (att) => ({ att, dataUrl: await fileToDataUrl(att.file) }))
+        );
+
+        const messagesForApi = chat.messages
+          .filter((m) => m.id !== assistantMessageId)
+          .map((msg) => {
+            if (msg.id === userMessageId && attachmentData.length > 0) {
+              const contentParts: Array<
+                { type: "text"; text: string } |
+                { type: "image_url"; image_url: { url: string } } |
+                { type: "file"; file: { filename: string; file_data: string } }
+              > = [];
+
               if (content.trim()) {
                 contentParts.push({ type: "text", text: content });
               }
 
-              for (const att of attachments) {
+              for (const { att, dataUrl } of attachmentData) {
                 if (att.type === "image") {
-                  contentParts.push({
-                    type: "image_url",
-                    image_url: { url: att.data },
-                  });
+                  contentParts.push({ type: "image_url", image_url: { url: dataUrl } });
                 } else if (att.type === "pdf") {
-                  contentParts.push({
-                    type: "file",
-                    file: {
-                      filename: att.name,
-                      file_data: att.data,
-                    },
-                  });
+                  contentParts.push({ type: "file", file: { filename: att.name, file_data: dataUrl } });
                 }
               }
 
@@ -180,45 +300,18 @@ export function useChatStore() {
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: messagesForApi,
-            model: selectedModel,
-            systemPrompt,
-          }),
+          body: JSON.stringify({ messages: messagesForApi, model: selectedModel, systemPrompt }),
         });
 
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
 
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
 
-        const assistantMessageId = generateId();
         let assistantContent = "";
-
-        setChats((prev) =>
-          prev.map((chat) =>
-            chat.id === chatId
-              ? {
-                  ...chat,
-                  messages: [
-                    ...chat.messages,
-                    {
-                      id: assistantMessageId,
-                      role: "assistant" as const,
-                      content: "",
-                      createdAt: new Date(),
-                    },
-                  ],
-                  updatedAt: new Date(),
-                }
-              : chat
-          )
-        );
+        let firstContent = true;
 
         if (reader) {
-          let firstContent = true;
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
@@ -227,128 +320,143 @@ export function useChatStore() {
             const lines = chunk.split("\n");
 
             for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const data = line.slice(6);
-                if (data === "[DONE]") continue;
-                try {
-                  const parsed = JSON.parse(data);
-                  const delta = parsed.choices?.[0]?.delta?.content;
-                  if (delta) {
-                    if (firstContent) {
-                      setIsLoading(false);
-                      firstContent = false;
-                    }
-                    assistantContent += delta;
-                    setChats((prev) =>
-                      prev.map((chat) =>
-                        chat.id === chatId
-                          ? {
-                              ...chat,
-                              messages: chat.messages.map((msg) =>
-                                msg.id === assistantMessageId
-                                  ? { ...msg, content: assistantContent }
-                                  : msg
-                              ),
-                            }
-                          : chat
-                      )
-                    );
+              if (!line.startsWith("data: ")) continue;
+              const data = line.slice(6);
+              if (data === "[DONE]") continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                const delta: unknown = parsed.choices?.[0]?.delta?.content;
+                if (typeof delta === "string" && delta.length > 0) {
+                  if (firstContent) {
+                    set({ isLoading: false });
+                    firstContent = false;
                   }
-                } catch {
+                  assistantContent += delta;
+                  set((s) => ({ streaming: { ...s.streaming, content: assistantContent } }));
                 }
+              } catch {
+                // ignore malformed SSE lines
               }
             }
           }
         }
 
-        clearAttachments();
+        // Merge streaming content once (prevents full-tree render storms).
+        set((s) => ({
+          chats: s.chats.map((chatItem) =>
+            chatItem.id === chatId
+              ? {
+                  ...chatItem,
+                  messages: chatItem.messages.map((m) =>
+                    m.id === assistantMessageId ? { ...m, content: assistantContent } : m
+                  ),
+                  updatedAt: new Date(),
+                }
+              : chatItem
+          ),
+          streaming: { chatId: null, messageId: null, content: "" },
+        }));
+
+        get().clearAttachments();
       } catch (error) {
         console.error("Failed to send message:", error);
-        setChats((prev) =>
-          prev.map((chat) =>
-            chat.id === chatId
+        const message = `Error: ${error instanceof Error ? error.message : "Failed to get response"}`;
+
+        set((s) => ({
+          chats: s.chats.map((chatItem) =>
+            chatItem.id === chatId
               ? {
-                  ...chat,
-                  messages: [
-                    ...chat.messages,
-                    {
-                      id: generateId(),
-                      role: "assistant" as const,
-                      content: `Error: ${error instanceof Error ? error.message : "Failed to get response"}`,
-                      createdAt: new Date(),
-                    },
-                  ],
+                  ...chatItem,
+                  messages: chatItem.messages.map((m) =>
+                    m.id === assistantMessageId ? { ...m, content: message } : m
+                  ),
                 }
-              : chat
-          )
-        );
+              : chatItem
+          ),
+          streaming: { chatId: null, messageId: null, content: "" },
+        }));
       } finally {
-        setIsLoading(false);
+        set({ isLoading: false });
       }
     },
-    [currentChatId, chats, selectedModel, webSearchEnabled, attachments, clearAttachments, selectedCategory]
-  );
 
-  const selectChat = useCallback((chatId: string) => {
-    setCurrentChatId(chatId);
-    setAttachments([]);
-  }, []);
+    selectChat: (chatId) => {
+      const { attachments } = get();
+      attachments.forEach(revokePreviewUrl);
+      set({ currentChatId: chatId, attachments: [] });
+    },
 
-  const deleteChat = useCallback((chatId: string) => {
-    setChats((prev) => prev.filter((c) => c.id !== chatId));
-    if (currentChatId === chatId) {
-      setCurrentChatId(null);
-    }
-  }, [currentChatId]);
+    deleteChat: (chatId) => {
+      set((s) => ({
+        chats: s.chats.filter((c) => c.id !== chatId),
+        currentChatId: s.currentChatId === chatId ? null : s.currentChatId,
+      }));
+    },
 
-  const clearCurrentChatHistory = useCallback(() => {
-    if (!currentChatId) return;
-    setChats((prev) =>
-      prev.map((chat) =>
-        chat.id === currentChatId
-          ? { ...chat, messages: [], updatedAt: new Date() }
-          : chat
-      )
-    );
-  }, [currentChatId]);
+    clearCurrentChatHistory: () => {
+      const { currentChatId } = get();
+      if (!currentChatId) return;
+      set((s) => ({
+        chats: s.chats.map((chat) =>
+          chat.id === currentChatId ? { ...chat, messages: [], updatedAt: new Date() } : chat
+        ),
+      }));
+    },
 
-  const searchChats = useCallback(
-    (query: string) => {
+    searchChats: (query) => {
+      const { chats } = get();
       if (!query.trim()) return chats;
       const lowerQuery = query.toLowerCase();
       return chats.filter(
         (chat) =>
           chat.title.toLowerCase().includes(lowerQuery) ||
           chat.messages.some((msg) =>
-            typeof msg.content === "string"
-              ? msg.content.toLowerCase().includes(lowerQuery)
-              : false
+            typeof msg.content === "string" ? msg.content.toLowerCase().includes(lowerQuery) : false
           )
       );
     },
-    [chats]
-  );
+  }))
+);
 
-  return {
-    chats,
-    currentChat,
-    currentChatId,
-    selectedModel,
-    setSelectedModel,
-    webSearchEnabled,
-    setWebSearchEnabled,
-    isLoading,
-    attachments,
-    addAttachment,
-    removeAttachment,
-    clearAttachments,
-    createNewChat,
-    sendMessage,
-    selectChat,
-    deleteChat,
-    clearCurrentChatHistory,
-    searchChats,
-    selectedCategory,
-    setSelectedCategory,
+let hasStorageSubscription = false;
+const STORAGE_SUBSCRIBE_SENTINEL = "__t3_chat_store_storage_subscribed__";
+const globalSentinel = globalThis as unknown as Record<string, unknown>;
+
+if (typeof window !== "undefined" && !hasStorageSubscription && !globalSentinel[STORAGE_SUBSCRIBE_SENTINEL]) {
+  hasStorageSubscription = true;
+  globalSentinel[STORAGE_SUBSCRIBE_SENTINEL] = true;
+
+  let timeoutId: number | null = null;
+  let idleId: number | null = null;
+  let pendingChats: Chat[] | null = null;
+
+  type IdleDeadline = { didTimeout: boolean; timeRemaining: () => number };
+  const requestIdle = (cb: (deadline: IdleDeadline) => void): number => {
+    const ric = (window as unknown as { requestIdleCallback?: (c: (d: IdleDeadline) => void, o?: { timeout?: number }) => number })
+      .requestIdleCallback;
+    if (ric) return ric(cb, { timeout: 2000 });
+    return window.setTimeout(() => cb({ didTimeout: true, timeRemaining: () => 0 }), 0);
   };
+  const cancelIdle = (id: number) => {
+    const cic = (window as unknown as { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback;
+    if (cic) return cic(id);
+    window.clearTimeout(id);
+  };
+
+  useChatStore.subscribe(
+    (s) => s.chats,
+    (chats) => {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      pendingChats = chats;
+
+      timeoutId = window.setTimeout(() => {
+        if (idleId) cancelIdle(idleId);
+        idleId = requestIdle(() => {
+          if (!pendingChats) return;
+          saveChatsToStorage(pendingChats);
+        });
+      }, STORAGE_DEBOUNCE_MS);
+    }
+  );
 }

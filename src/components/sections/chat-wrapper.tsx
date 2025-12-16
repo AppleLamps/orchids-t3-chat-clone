@@ -10,30 +10,99 @@ import MobileWarning from "@/components/sections/mobile-warning";
 import SidebarToggleButtons from "@/components/sections/sidebar-toggle-buttons";
 import { ChatMessages } from "@/components/sections/chat-messages";
 
+function SidebarPane({ isOpen }: { isOpen: boolean }) {
+  const chats = useChatStore((s) => s.chats);
+  const currentChatId = useChatStore((s) => s.currentChatId);
+  const selectChat = useChatStore((s) => s.selectChat);
+  const deleteChat = useChatStore((s) => s.deleteChat);
+  const createNewChat = useChatStore((s) => s.createNewChat);
+  const clearCurrentChatHistory = useChatStore((s) => s.clearCurrentChatHistory);
+  const searchChats = useChatStore((s) => s.searchChats);
+  const hasCurrentChat = useChatStore((s) => {
+    const current = s.chats.find((c) => c.id === s.currentChatId) ?? null;
+    return !!current && current.messages.length > 0;
+  });
+
+  return (
+    <Sidebar
+      chats={chats}
+      currentChatId={currentChatId}
+      onSelectChat={selectChat}
+      onDeleteChat={deleteChat}
+      onNewChat={createNewChat}
+      onClearHistory={clearCurrentChatHistory}
+      hasCurrentChat={hasCurrentChat}
+      searchChats={searchChats}
+      isOpen={isOpen}
+    />
+  );
+}
+
+function MessagesPane() {
+  const chats = useChatStore((s) => s.chats);
+  const currentChatId = useChatStore((s) => s.currentChatId);
+  const isLoading = useChatStore((s) => s.isLoading);
+  const sendMessage = useChatStore((s) => s.sendMessage);
+  const selectedCategory = useChatStore((s) => s.selectedCategory);
+  const setSelectedCategory = useChatStore((s) => s.setSelectedCategory);
+  const streamingMessageId = useChatStore((s) => s.streaming.messageId);
+  const streamingContent = useChatStore((s) => s.streaming.content);
+
+  const currentChat = chats.find((c) => c.id === currentChatId) ?? null;
+
+  return (
+    <div className="flex-1 overflow-y-auto pb-[200px]">
+      {currentChat ? (
+        <ChatMessages
+          messages={currentChat.messages}
+          isLoading={isLoading}
+          streamingMessageId={streamingMessageId}
+          streamingContent={streamingContent}
+        />
+      ) : (
+        <WelcomeHeader
+          onSendMessage={sendMessage}
+          selectedCategory={selectedCategory}
+          onCategoryChange={(category) => setSelectedCategory(category)}
+        />
+      )}
+    </div>
+  );
+}
+
+function ComposerPane({ sidebarOpen }: { sidebarOpen: boolean }) {
+  const sendMessage = useChatStore((s) => s.sendMessage);
+  const isLoading = useChatStore((s) => s.isLoading);
+  const selectedModel = useChatStore((s) => s.selectedModel);
+  const setSelectedModel = useChatStore((s) => s.setSelectedModel);
+  const webSearchEnabled = useChatStore((s) => s.webSearchEnabled);
+  const toggleWebSearchEnabled = useChatStore((s) => s.toggleWebSearchEnabled);
+  const attachments = useChatStore((s) => s.attachments);
+  const addAttachment = useChatStore((s) => s.addAttachment);
+  const removeAttachment = useChatStore((s) => s.removeAttachment);
+
+  return (
+    <div
+      className={`pointer-events-none fixed bottom-0 left-0 right-0 z-30 flex flex-col items-center transition-[left] duration-300 ease-in-out ${sidebarOpen ? "md:left-[240px]" : "md:left-0"}`}
+    >
+      <TermsDisclaimer />
+      <ChatInputForm
+        onSend={sendMessage}
+        isLoading={isLoading}
+        selectedModel={selectedModel}
+        onModelChange={setSelectedModel}
+        webSearchEnabled={webSearchEnabled}
+        onWebSearchToggle={toggleWebSearchEnabled}
+        attachments={attachments}
+        onAddAttachment={addAttachment}
+        onRemoveAttachment={removeAttachment}
+      />
+    </div>
+  );
+}
+
 export function ChatWrapper() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  
-  const {
-    chats,
-    currentChat,
-    currentChatId,
-    selectedModel,
-    setSelectedModel,
-    webSearchEnabled,
-    setWebSearchEnabled,
-    isLoading,
-    attachments,
-    addAttachment,
-    removeAttachment,
-    createNewChat,
-    sendMessage,
-    selectChat,
-    deleteChat,
-    clearCurrentChatHistory,
-    searchChats,
-    selectedCategory,
-    setSelectedCategory,
-  } = useChatStore();
 
   return (
     <div 
@@ -59,17 +128,7 @@ export function ChatWrapper() {
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          chats={chats}
-          currentChatId={currentChatId}
-          onSelectChat={selectChat}
-          onDeleteChat={deleteChat}
-          onNewChat={createNewChat}
-          onClearHistory={clearCurrentChatHistory}
-          hasCurrentChat={!!currentChat && currentChat.messages.length > 0}
-          searchChats={searchChats}
-          isOpen={sidebarOpen}
-        />
+        <SidebarPane isOpen={sidebarOpen} />
         
         <SidebarToggleButtons 
           isOpen={sidebarOpen} 
@@ -79,35 +138,8 @@ export function ChatWrapper() {
         {/* Content Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
           <div className="relative flex h-full flex-col">
-            <div className="flex-1 overflow-y-auto pb-[200px]">
-              {currentChat ? (
-                <ChatMessages 
-                  messages={currentChat.messages} 
-                  isLoading={isLoading} 
-                />
-              ) : (
-                <WelcomeHeader 
-                  onSendMessage={sendMessage}
-                  selectedCategory={selectedCategory}
-                  onCategoryChange={setSelectedCategory}
-                />
-              )}
-            </div>
-            
-            <div className={`pointer-events-none fixed bottom-0 left-0 right-0 z-30 flex flex-col items-center transition-[left] duration-300 ease-in-out ${sidebarOpen ? 'md:left-[240px]' : 'md:left-0'}`}>
-              <TermsDisclaimer />
-              <ChatInputForm
-                onSend={sendMessage}
-                isLoading={isLoading}
-                selectedModel={selectedModel}
-                onModelChange={setSelectedModel}
-                webSearchEnabled={webSearchEnabled}
-                onWebSearchToggle={() => setWebSearchEnabled(!webSearchEnabled)}
-                attachments={attachments}
-                onAddAttachment={addAttachment}
-                onRemoveAttachment={removeAttachment}
-              />
-            </div>
+            <MessagesPane />
+            <ComposerPane sidebarOpen={sidebarOpen} />
           </div>
         </main>
       </div>

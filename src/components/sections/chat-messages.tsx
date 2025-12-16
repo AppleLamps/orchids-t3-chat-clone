@@ -7,6 +7,8 @@ import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 interface ChatMessagesProps {
   messages: Message[];
   isLoading: boolean;
+  streamingMessageId?: string | null;
+  streamingContent?: string;
 }
 
 const getMessageContent = (message: Message): string => {
@@ -54,14 +56,18 @@ const LoadingIndicator = memo(function LoadingIndicator() {
   );
 });
 
-export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, streamingMessageId, streamingContent }: ChatMessagesProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const lastMessageCountRef = useRef(messages.length);
   const lastContentLengthRef = useRef(0);
 
   useEffect(() => {
-    const currentContentLength = messages.reduce((acc, m) => acc + (typeof m.content === "string" ? m.content.length : 0), 0);
+    const currentContentLength = messages.reduce((acc, m) => {
+      const isStreaming = m.id === streamingMessageId;
+      if (isStreaming) return acc + (streamingContent?.length ?? 0);
+      return acc + (typeof m.content === "string" ? m.content.length : 0);
+    }, 0);
     
     if (messages.length > lastMessageCountRef.current) {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -71,7 +77,7 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
     
     lastMessageCountRef.current = messages.length;
     lastContentLengthRef.current = currentContentLength;
-  }, [messages]);
+  }, [messages, streamingMessageId, streamingContent]);
 
   if (messages.length === 0) {
     return null;
@@ -88,9 +94,9 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
       {messages.map((message) => (
         <div key={message.id}>
           {message.role === "user" ? (
-            <UserMessage content={getMessageContent(message)} />
+            <UserMessage content={message.id === streamingMessageId ? (streamingContent ?? "") : getMessageContent(message)} />
           ) : (
-            <AssistantMessage content={getMessageContent(message)} />
+            <AssistantMessage content={message.id === streamingMessageId ? (streamingContent ?? "") : getMessageContent(message)} />
           )}
         </div>
       ))}
