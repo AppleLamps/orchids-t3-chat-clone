@@ -301,6 +301,17 @@ export function useChatStore() {
     }
   }, [currentChatId]);
 
+  const clearCurrentChatHistory = useCallback(() => {
+    if (!currentChatId) return;
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat.id === currentChatId
+          ? { ...chat, messages: [], updatedAt: new Date() }
+          : chat
+      )
+    );
+  }, [currentChatId]);
+
   const searchChats = useCallback(
     (query: string) => {
       if (!query.trim()) return chats;
@@ -335,6 +346,7 @@ export function useChatStore() {
     sendMessage,
     selectChat,
     deleteChat,
+    clearCurrentChatHistory,
     searchChats,
     selectedCategory,
     setSelectedCategory,

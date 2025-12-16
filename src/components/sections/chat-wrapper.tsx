@@ -8,7 +8,6 @@ import TermsDisclaimer from "@/components/sections/terms-disclaimer";
 import ChatInputForm from "@/components/sections/chat-input-form";
 import MobileWarning from "@/components/sections/mobile-warning";
 import SidebarToggleButtons from "@/components/sections/sidebar-toggle-buttons";
-import TopRightSettings from "@/components/sections/top-right-settings";
 import { ChatMessages } from "@/components/sections/chat-messages";
 
 export function ChatWrapper() {
@@ -30,6 +29,7 @@ export function ChatWrapper() {
     sendMessage,
     selectChat,
     deleteChat,
+    clearCurrentChatHistory,
     searchChats,
     selectedCategory,
     setSelectedCategory,
@@ -65,6 +65,8 @@ export function ChatWrapper() {
           onSelectChat={selectChat}
           onDeleteChat={deleteChat}
           onNewChat={createNewChat}
+          onClearHistory={clearCurrentChatHistory}
+          hasCurrentChat={!!currentChat && currentChat.messages.length > 0}
           searchChats={searchChats}
           isOpen={sidebarOpen}
         />
@@ -77,8 +79,6 @@ export function ChatWrapper() {
         {/* Content Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
           <div className="relative flex h-full flex-col">
-            <TopRightSettings />
-            
             <div className="flex-1 overflow-y-auto pb-[200px]">
               {currentChat ? (
                 <ChatMessages 

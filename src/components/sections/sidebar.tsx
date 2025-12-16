@@ -12,6 +12,8 @@ interface SidebarProps {
   onSelectChat: (id: string) => void;
   onDeleteChat: (id: string) => void;
   onNewChat: () => void;
+  onClearHistory: () => void;
+  hasCurrentChat: boolean;
   searchChats: (query: string) => Chat[];
   isOpen?: boolean;
 }
@@ -22,6 +24,8 @@ export default function Sidebar({
   onSelectChat,
   onDeleteChat,
   onNewChat,
+  onClearHistory,
+  hasCurrentChat,
   searchChats,
   isOpen = true,
 }: SidebarProps) {
@@ -109,6 +113,16 @@ export default function Sidebar({
             </div>
           )}
         </div>
+
+        {/* Clear History Button - only show if there's a current chat with messages */}
+        {hasCurrentChat && (
+          <button
+            onClick={onClearHistory}
+            className="w-full mb-4 bg-transparent border border-[#ff5f5730] text-[#ff5f57] py-2 px-3 text-[12px] font-medium cursor-pointer transition-all duration-200 hover:bg-[#ff5f5720] hover:border-[#ff5f57]"
+          >
+            Clear History
+          </button>
+        )}
 
         {/* Footer */}
         <div className="text-[10px] text-[#00ff4180] text-center pt-4 border-t border-[#00ff4130]">

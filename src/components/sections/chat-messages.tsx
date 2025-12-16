@@ -80,7 +80,7 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   return (
     <div 
       ref={containerRef} 
-      className="flex flex-col gap-8 p-10 max-w-[700px] mx-auto" 
+      className="flex flex-col gap-8 px-10 pt-16 pb-10 max-w-[700px] mx-auto" 
       role="log" 
       aria-live="polite"
       style={{ fontFamily: "'JetBrains Mono', monospace" }}

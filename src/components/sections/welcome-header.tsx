@@ -27,7 +27,7 @@ interface WelcomeHeaderProps {
 export default function WelcomeHeader({ onSendMessage, selectedCategory, onCategoryChange }: WelcomeHeaderProps) {
   return (
     <div 
-      className="flex-1 flex flex-col p-10 overflow-y-auto"
+      className="flex-1 flex flex-col px-10 pt-16 pb-10"
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
       <div className="max-w-[700px] mx-auto w-full flex-1 flex flex-col">
