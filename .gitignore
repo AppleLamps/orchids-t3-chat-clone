@@ -13,6 +13,10 @@
 # testing
 /coverage
 
+# performance testing tools (local only)
+src/lib/web-vitals.ts
+src/components/performance-monitor.tsx
+
 # next.js
 /.next/
 /out/

@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import type { Chat, Message, ModelId, Attachment, MessageContent } from "@/types/chat";
 import { MODELS } from "@/types/chat";
+import { useEffect, useState } from "react";
 
 export type CategoryId = "create" | "explore" | "code" | "learn";
 
@@ -131,6 +132,7 @@ interface ChatStoreState {
   attachments: Attachment[];
   selectedCategory: CategoryId | null;
   streaming: StreamingState;
+  _hydrated: boolean;
 
   setSelectedModel: (model: ModelId) => void;
   toggleWebSearchEnabled: () => void;
@@ -146,6 +148,7 @@ interface ChatStoreState {
   deleteChat: (chatId: string) => void;
   clearCurrentChatHistory: () => void;
   searchChats: (query: string) => Chat[];
+  _hydrateFromStorage: () => void;
 }
 
 function revokePreviewUrl(attachment: Attachment) {
@@ -170,7 +173,8 @@ function fileToDataUrl(file: File): Promise<string> {
 
 export const useChatStore = create<ChatStoreState>()(
   subscribeWithSelector((set, get) => ({
-    chats: typeof window === "undefined" ? [] : loadChatsFromStorage(),
+    // Always start with empty array to prevent hydration mismatch
+    chats: [],
     currentChatId: null,
     selectedModel: MODELS.find((m) => m.isDefault)?.id ?? MODELS[0].id,
     webSearchEnabled: false,
@@ -178,6 +182,13 @@ export const useChatStore = create<ChatStoreState>()(
     attachments: [],
     selectedCategory: null,
     streaming: { chatId: null, messageId: null, content: "" },
+    _hydrated: false,
+
+    _hydrateFromStorage: () => {
+      if (get()._hydrated) return;
+      const chats = loadChatsFromStorage();
+      set({ chats, _hydrated: true });
+    },
 
     setSelectedModel: (model) => set({ selectedModel: model }),
     toggleWebSearchEnabled: () => set((s) => ({ webSearchEnabled: !s.webSearchEnabled })),
@@ -246,12 +257,12 @@ export const useChatStore = create<ChatStoreState>()(
         chats: s.chats.map((chat) =>
           chat.id === chatId
             ? {
-                ...chat,
-                messages: [
-                  ...chat.messages,
-                  { id: assistantMessageId, role: "assistant" as const, content: "", createdAt: new Date() },
-                ],
-              }
+              ...chat,
+              messages: [
+                ...chat.messages,
+                { id: assistantMessageId, role: "assistant" as const, content: "", createdAt: new Date() },
+              ],
+            }
             : chat
         ),
         streaming: { chatId, messageId: assistantMessageId, content: "" },
@@ -347,12 +358,12 @@ export const useChatStore = create<ChatStoreState>()(
           chats: s.chats.map((chatItem) =>
             chatItem.id === chatId
               ? {
-                  ...chatItem,
-                  messages: chatItem.messages.map((m) =>
-                    m.id === assistantMessageId ? { ...m, content: assistantContent } : m
-                  ),
-                  updatedAt: new Date(),
-                }
+                ...chatItem,
+                messages: chatItem.messages.map((m) =>
+                  m.id === assistantMessageId ? { ...m, content: assistantContent } : m
+                ),
+                updatedAt: new Date(),
+              }
               : chatItem
           ),
           streaming: { chatId: null, messageId: null, content: "" },
@@ -367,11 +378,11 @@ export const useChatStore = create<ChatStoreState>()(
           chats: s.chats.map((chatItem) =>
             chatItem.id === chatId
               ? {
-                  ...chatItem,
-                  messages: chatItem.messages.map((m) =>
-                    m.id === assistantMessageId ? { ...m, content: message } : m
-                  ),
-                }
+                ...chatItem,
+                messages: chatItem.messages.map((m) =>
+                  m.id === assistantMessageId ? { ...m, content: message } : m
+                ),
+              }
               : chatItem
           ),
           streaming: { chatId: null, messageId: null, content: "" },
@@ -459,4 +470,19 @@ if (typeof window !== "undefined" && !hasStorageSubscription && !globalSentinel[
       }, STORAGE_DEBOUNCE_MS);
     }
   );
+}
+
+/**
+ * Hook to ensure the store is hydrated from localStorage on the client.
+ * Must be called in a component that renders on the client.
+ */
+export function useHydrateStore() {
+  const hydrateFromStorage = useChatStore((s) => s._hydrateFromStorage);
+  const hydrated = useChatStore((s) => s._hydrated);
+
+  useEffect(() => {
+    hydrateFromStorage();
+  }, [hydrateFromStorage]);
+
+  return hydrated;
 }

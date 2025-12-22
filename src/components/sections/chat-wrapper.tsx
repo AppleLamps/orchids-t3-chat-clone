@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useChatStore } from "@/hooks/use-chat-store";
+import { useChatStore, useHydrateStore } from "@/hooks/use-chat-store";
 import Sidebar from "@/components/sections/sidebar";
 import WelcomeHeader from "@/components/sections/welcome-header";
 import TermsDisclaimer from "@/components/sections/terms-disclaimer";
@@ -104,16 +104,19 @@ function ComposerPane({ sidebarOpen }: { sidebarOpen: boolean }) {
 export function ChatWrapper() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Hydrate the store from localStorage on the client side
+  useHydrateStore();
+
   return (
-    <div 
+    <div
       className="flex flex-col h-screen w-full overflow-hidden bg-[#0a0a0a] border border-[#00ff4130]"
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
       {/* Scanline Overlay */}
       <div className="scanlines" />
-      
+
       <MobileWarning />
-      
+
       {/* Title Bar */}
       <div className="flex items-center py-3 px-4 bg-[#111111] border-b border-[#00ff4130] gap-2 relative z-10">
         <div className="flex gap-2">
@@ -129,12 +132,12 @@ export function ChatWrapper() {
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
         <SidebarPane isOpen={sidebarOpen} />
-        
-        <SidebarToggleButtons 
-          isOpen={sidebarOpen} 
-          onToggle={() => setSidebarOpen(!sidebarOpen)} 
+
+        <SidebarToggleButtons
+          isOpen={sidebarOpen}
+          onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
-        
+
         {/* Content Area */}
         <main className="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
           <div className="relative flex h-full flex-col">

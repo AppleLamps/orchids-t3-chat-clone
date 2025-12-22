@@ -33,10 +33,10 @@ export default function Sidebar({
   const displayedChats = searchQuery ? searchChats(searchQuery) : chats;
 
   return (
-    <aside 
+    <aside
       className={cn(
-        "relative h-screen w-[240px] flex-shrink-0 flex-col bg-[#111111] border-r border-[#00ff4130] transition-all duration-300 ease-in-out",
-        isOpen ? "md:flex md:translate-x-0" : "md:flex md:-translate-x-full md:w-0 md:border-r-0",
+        "relative h-screen w-[240px] flex-shrink-0 flex-col bg-[#111111] border-r border-[#00ff4130] transition-all duration-300 ease-in-out overflow-hidden",
+        isOpen ? "md:flex md:translate-x-0" : "md:flex md:w-0 md:border-r-0 md:opacity-0",
         "hidden"
       )}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
@@ -44,8 +44,8 @@ export default function Sidebar({
       <div className="flex h-full flex-col p-4">
         {/* Logo */}
         <div className="text-center mb-5">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-[16px] font-bold text-[#00ff41] no-underline green-glow"
           >
             <span className="text-[#00cc33]">{"> "}</span>
@@ -101,7 +101,7 @@ export default function Sidebar({
               </button>
             </div>
           ))}
-          
+
           {displayedChats.length === 0 && chats.length === 0 && (
             <div className="flex-1 flex items-center justify-center text-[11px] text-[#00ff4180] text-center p-5">
               <span>// No chats yet. Start a new conversation!</span>
@@ -126,8 +126,8 @@ export default function Sidebar({
 
         {/* Footer */}
         <div className="text-[10px] text-[#00ff4180] text-center pt-4 border-t border-[#00ff4130]">
-          API costs covered by<br/>
-          <a 
+          API costs covered by<br />
+          <a
             href="https://x.com/lamps_apple"
             target="_blank"
             rel="noopener noreferrer"
