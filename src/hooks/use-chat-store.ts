@@ -236,11 +236,43 @@ export const useChatStore = create<ChatStoreState>()(
       const abortController = new AbortController();
       set({ isLoading: true });
 
+      // Convert attachments to data URLs first so we can store them in the message
+      const attachmentData = await Promise.all(
+        state.attachments.map(async (att) => ({ att, dataUrl: await fileToDataUrl(att.file) }))
+      );
+
+      // Build user message content with images included
       const userMessageId = generateId();
+      let userMessageContent: Message["content"];
+
+      if (attachmentData.length > 0) {
+        const contentParts: Array<
+          { type: "text"; text: string } |
+          { type: "image_url"; image_url: { url: string } } |
+          { type: "file"; file: { filename: string; file_data: string } }
+        > = [];
+
+        if (content.trim()) {
+          contentParts.push({ type: "text", text: content });
+        }
+
+        for (const { att, dataUrl } of attachmentData) {
+          if (att.type === "image") {
+            contentParts.push({ type: "image_url", image_url: { url: dataUrl } });
+          } else if (att.type === "pdf") {
+            contentParts.push({ type: "file", file: { filename: att.name, file_data: dataUrl } });
+          }
+        }
+
+        userMessageContent = contentParts;
+      } else {
+        userMessageContent = content;
+      }
+
       const userMessage: Message = {
         id: userMessageId,
         role: "user",
-        content,
+        content: userMessageContent,
         createdAt: new Date(),
       };
 
@@ -284,42 +316,15 @@ export const useChatStore = create<ChatStoreState>()(
       }));
 
       try {
-        const { selectedModel, selectedCategory, attachments } = get();
+        const { selectedModel, selectedCategory } = get();
 
         const chat = get().chats.find((c) => c.id === chatId);
         if (!chat) throw new Error("Chat not found");
 
-        // Convert files at send-time (avoid Base64 in state/localStorage).
-        const attachmentData = await Promise.all(
-          attachments.map(async (att) => ({ att, dataUrl: await fileToDataUrl(att.file) }))
-        );
-
+        // Messages already have attachment data embedded, just filter out the empty assistant message
         const messagesForApi = chat.messages
           .filter((m) => m.id !== assistantMessageId)
-          .map((msg) => {
-            if (msg.id === userMessageId && attachmentData.length > 0) {
-              const contentParts: Array<
-                { type: "text"; text: string } |
-                { type: "image_url"; image_url: { url: string } } |
-                { type: "file"; file: { filename: string; file_data: string } }
-              > = [];
-
-              if (content.trim()) {
-                contentParts.push({ type: "text", text: content });
-              }
-
-              for (const { att, dataUrl } of attachmentData) {
-                if (att.type === "image") {
-                  contentParts.push({ type: "image_url", image_url: { url: dataUrl } });
-                } else if (att.type === "pdf") {
-                  contentParts.push({ type: "file", file: { filename: att.name, file_data: dataUrl } });
-                }
-              }
-
-              return { role: msg.role, content: contentParts };
-            }
-            return { role: msg.role, content: msg.content };
-          });
+          .map((msg) => ({ role: msg.role, content: msg.content }));
 
         // Use chat's category if available, otherwise fall back to selected category
         const category = chat.category ?? selectedCategory;
