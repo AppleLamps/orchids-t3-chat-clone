@@ -200,7 +200,13 @@ export default function ChatInputForm({
                 key={att.id}
                 className="relative flex items-center gap-2 px-3 py-2 bg-[#111111] border border-[#00ff4130]"
               >
-                {att.type === "image" ? (
+                {att.type === "image" && att.previewUrl ? (
+                  <img
+                    src={att.previewUrl}
+                    alt={att.name}
+                    className="w-12 h-12 object-cover border border-[#00ff4130] rounded"
+                  />
+                ) : att.type === "image" ? (
                   <Image className="w-4 h-4 text-[#00ff41]" />
                 ) : (
                   <FileText className="w-4 h-4 text-[#00ff41]" />
