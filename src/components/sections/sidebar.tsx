@@ -16,6 +16,7 @@ interface SidebarProps {
   hasCurrentChat: boolean;
   searchChats: (query: string) => Chat[];
   isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export default function Sidebar({
@@ -28,19 +29,41 @@ export default function Sidebar({
   hasCurrentChat,
   searchChats,
   isOpen = true,
+  onClose,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const displayedChats = searchQuery ? searchChats(searchQuery) : chats;
 
+  const handleSelectChat = (id: string) => {
+    onSelectChat(id);
+    // Close sidebar on mobile after selection
+    if (window.innerWidth < 768) {
+      onClose?.();
+    }
+  };
+
   return (
-    <aside
-      className={cn(
-        "relative h-screen w-[240px] flex-shrink-0 flex-col bg-[#111111] border-r border-[#00ff4130] transition-all duration-300 ease-in-out overflow-hidden",
-        isOpen ? "md:flex md:translate-x-0" : "md:flex md:w-0 md:border-r-0 md:opacity-0",
-        "hidden"
+    <>
+      {/* Mobile overlay backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
       )}
-      style={{ fontFamily: "'JetBrains Mono', monospace" }}
-    >
+      <aside
+        className={cn(
+          "h-screen w-[240px] flex-shrink-0 flex-col bg-[#111111] border-r border-[#00ff4130] transition-all duration-300 ease-in-out overflow-hidden z-50",
+          // Mobile: fixed position, slide in from left
+          "fixed left-0 top-0",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          // Desktop: relative position with different animation
+          "md:relative md:z-auto",
+          isOpen ? "md:flex md:translate-x-0" : "md:flex md:w-0 md:border-r-0 md:opacity-0 md:-translate-x-0"
+        )}
+        style={{ fontFamily: "'JetBrains Mono', monospace" }}
+      >
       <div className="flex h-full flex-col p-4">
         {/* Logo */}
         <div className="text-center mb-5">
@@ -81,7 +104,7 @@ export default function Sidebar({
                   ? "bg-[#00ff4120] text-[#00ff41]"
                   : "text-[#00ff4180] hover:text-[#00ff41] hover:pl-3"
               )}
-              onClick={() => onSelectChat(chat.id)}
+              onClick={() => handleSelectChat(chat.id)}
             >
               <span className={cn(
                 "text-[#00cc33] opacity-0 transition-opacity duration-200",
@@ -137,6 +160,7 @@ export default function Sidebar({
           </a>
         </div>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

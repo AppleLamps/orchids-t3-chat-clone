@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, memo, useState } from "react";
-import type { Message } from "@/types/chat";
+import type { Message, MessageContent } from "@/types/chat";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
 import { Copy, Check, RefreshCw, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -24,14 +24,70 @@ const getMessageContent = (message: Message): string => {
     .join("");
 };
 
-const UserMessage = memo(function UserMessage({ content }: { content: string }) {
+const getMessageImages = (content: MessageContent): string[] => {
+  if (typeof content === "string") return [];
+  return content
+    .filter((c) => c.type === "image_url")
+    .map((c) => ("image_url" in c ? c.image_url.url : ""))
+    .filter(Boolean);
+};
+
+const formatTimestamp = (date: Date): string => {
+  const now = new Date();
+  const messageDate = new Date(date);
+  const diffMs = now.getTime() - messageDate.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+
+  return messageDate.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const UserMessage = memo(function UserMessage({
+  content,
+  timestamp,
+  images,
+}: {
+  content: string;
+  timestamp?: Date;
+  images?: string[];
+}) {
   return (
-    <div className="flex justify-end w-full">
+    <div className="flex justify-end w-full group">
       <div className="max-w-[85%] py-2 border-r-2 border-[#00ff41] pr-4">
-        <p className="text-[14px] leading-relaxed break-words text-[#00ff41] text-right">
-          <span className="text-[#00cc33] mr-2">$</span>
-          {content}
-        </p>
+        {images && images.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2 justify-end">
+            {images.map((src, idx) => (
+              <img
+                key={idx}
+                src={src}
+                alt={`Attachment ${idx + 1}`}
+                className="max-w-[200px] max-h-[200px] object-cover border border-[#00ff4130] rounded"
+              />
+            ))}
+          </div>
+        )}
+        {content && (
+          <p className="text-[14px] leading-relaxed break-words text-[#00ff41] text-right">
+            <span className="text-[#00cc33] mr-2">$</span>
+            {content}
+          </p>
+        )}
+        {timestamp && (
+          <p className="text-[10px] text-[#00ff4140] text-right mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {formatTimestamp(timestamp)}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -41,14 +97,14 @@ const AssistantMessage = memo(function AssistantMessage({
   content,
   isLast,
   onRegenerate,
-  onCopy,
   isError,
+  timestamp,
 }: {
   content: string;
   isLast?: boolean;
   onRegenerate?: () => void;
-  onCopy?: () => void;
   isError?: boolean;
+  timestamp?: Date;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -56,7 +112,6 @@ const AssistantMessage = memo(function AssistantMessage({
     await navigator.clipboard.writeText(content);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-    onCopy?.();
   };
 
   return (
@@ -84,7 +139,7 @@ const AssistantMessage = memo(function AssistantMessage({
           </div>
           {content && (
             <div className={cn(
-              "flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity",
+              "flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity",
               isLast && "opacity-100"
             )}>
               <button
@@ -106,6 +161,11 @@ const AssistantMessage = memo(function AssistantMessage({
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
+              )}
+              {timestamp && (
+                <span className="text-[10px] text-[#00ff4140] ml-auto">
+                  {formatTimestamp(timestamp)}
+                </span>
               )}
             </div>
           )}
@@ -189,6 +249,7 @@ export function ChatMessages({ messages, isLoading, streamingMessageId, streamin
         const content = message.id === streamingMessageId
           ? (streamingContent ?? "")
           : getMessageContent(message);
+        const images = message.role === "user" ? getMessageImages(message.content) : [];
         const isError = message.role === "assistant" && content.startsWith("Error:");
         const isLastAssistant = index === lastAssistantIndex;
         const isCurrentlyStreaming = message.id === streamingMessageId;
@@ -196,13 +257,14 @@ export function ChatMessages({ messages, isLoading, streamingMessageId, streamin
         return (
           <div key={message.id}>
             {message.role === "user" ? (
-              <UserMessage content={content} />
+              <UserMessage content={content} timestamp={message.createdAt} images={images} />
             ) : (
               <AssistantMessage
                 content={content}
                 isLast={isLastAssistant && !isCurrentlyStreaming}
                 onRegenerate={onRegenerate}
                 isError={isError}
+                timestamp={!isCurrentlyStreaming ? message.createdAt : undefined}
               />
             )}
           </div>

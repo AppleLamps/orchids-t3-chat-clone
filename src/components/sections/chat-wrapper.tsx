@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useChatStore, useHydrateStore } from "@/hooks/use-chat-store";
 import Sidebar from "@/components/sections/sidebar";
 import WelcomeHeader from "@/components/sections/welcome-header";
@@ -10,7 +10,7 @@ import MobileWarning from "@/components/sections/mobile-warning";
 import SidebarToggleButtons from "@/components/sections/sidebar-toggle-buttons";
 import { ChatMessages } from "@/components/sections/chat-messages";
 
-function SidebarPane({ isOpen }: { isOpen: boolean }) {
+function SidebarPane({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const chats = useChatStore((s) => s.chats);
   const currentChatId = useChatStore((s) => s.currentChatId);
   const selectChat = useChatStore((s) => s.selectChat);
@@ -34,6 +34,7 @@ function SidebarPane({ isOpen }: { isOpen: boolean }) {
       hasCurrentChat={hasCurrentChat}
       searchChats={searchChats}
       isOpen={isOpen}
+      onClose={onClose}
     />
   );
 }
@@ -109,9 +110,43 @@ function ComposerPane({ sidebarOpen }: { sidebarOpen: boolean }) {
 
 export function ChatWrapper() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const createNewChat = useChatStore((s) => s.createNewChat);
+  const stopGeneration = useChatStore((s) => s.stopGeneration);
+  const isStreaming = useChatStore((s) => s.streaming.messageId !== null);
 
   // Hydrate the store from localStorage on the client side
   useHydrateStore();
+
+  // Global keyboard shortcuts
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    const isMod = e.metaKey || e.ctrlKey;
+
+    // Cmd/Ctrl+N: New chat
+    if (isMod && e.key === "n") {
+      e.preventDefault();
+      createNewChat();
+      return;
+    }
+
+    // Cmd/Ctrl+Shift+S: Toggle sidebar
+    if (isMod && e.shiftKey && e.key === "s") {
+      e.preventDefault();
+      setSidebarOpen((prev) => !prev);
+      return;
+    }
+
+    // Escape: Stop generation if streaming
+    if (e.key === "Escape" && isStreaming) {
+      e.preventDefault();
+      stopGeneration();
+      return;
+    }
+  }, [createNewChat, stopGeneration, isStreaming]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div
@@ -137,7 +172,7 @@ export function ChatWrapper() {
 
       {/* Main Layout */}
       <div className="flex flex-1 overflow-hidden">
-        <SidebarPane isOpen={sidebarOpen} />
+        <SidebarPane isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <SidebarToggleButtons
           isOpen={sidebarOpen}

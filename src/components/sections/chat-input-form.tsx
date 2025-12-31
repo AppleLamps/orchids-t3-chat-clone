@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { ArrowUp, ChevronDown, Globe, Paperclip, X, FileText, Image, Search, Eye, Brain, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -163,16 +163,15 @@ export default function ChatInputForm({
 
   const currentModel = MODELS.find((m) => m.id === selectedModel) ?? MODELS[0];
 
-  const getModalPosition = () => {
-    if (!modelButtonRef.current) return { bottom: 0, left: 0 };
+  // Only calculate position when modal is open
+  const modalPosition = useMemo(() => {
+    if (!showModelSelector || !modelButtonRef.current) return { bottom: 0, left: 0 };
     const rect = modelButtonRef.current.getBoundingClientRect();
     return {
       bottom: window.innerHeight - rect.top + 8,
       left: rect.left,
     };
-  };
-
-  const modalPosition = getModalPosition();
+  }, [showModelSelector]);
 
   return (
     <div 
