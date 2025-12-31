@@ -43,6 +43,7 @@ function MessagesPane() {
   const currentChatId = useChatStore((s) => s.currentChatId);
   const isLoading = useChatStore((s) => s.isLoading);
   const sendMessage = useChatStore((s) => s.sendMessage);
+  const regenerateLastMessage = useChatStore((s) => s.regenerateLastMessage);
   const selectedCategory = useChatStore((s) => s.selectedCategory);
   const setSelectedCategory = useChatStore((s) => s.setSelectedCategory);
   const streamingMessageId = useChatStore((s) => s.streaming.messageId);
@@ -58,6 +59,7 @@ function MessagesPane() {
           isLoading={isLoading}
           streamingMessageId={streamingMessageId}
           streamingContent={streamingContent}
+          onRegenerate={regenerateLastMessage}
         />
       ) : (
         <WelcomeHeader
@@ -73,6 +75,8 @@ function MessagesPane() {
 function ComposerPane({ sidebarOpen }: { sidebarOpen: boolean }) {
   const sendMessage = useChatStore((s) => s.sendMessage);
   const isLoading = useChatStore((s) => s.isLoading);
+  const isStreaming = useChatStore((s) => s.streaming.messageId !== null);
+  const stopGeneration = useChatStore((s) => s.stopGeneration);
   const selectedModel = useChatStore((s) => s.selectedModel);
   const setSelectedModel = useChatStore((s) => s.setSelectedModel);
   const webSearchEnabled = useChatStore((s) => s.webSearchEnabled);
@@ -89,6 +93,8 @@ function ComposerPane({ sidebarOpen }: { sidebarOpen: boolean }) {
       <ChatInputForm
         onSend={sendMessage}
         isLoading={isLoading}
+        isStreaming={isStreaming}
+        onStopGeneration={stopGeneration}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
         webSearchEnabled={webSearchEnabled}

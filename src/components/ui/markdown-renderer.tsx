@@ -26,6 +26,7 @@ function CodeBlock({
 }) {
   const [copied, setCopied] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [wordWrap, setWordWrap] = useState(false);
 
   const isHtml = language?.toLowerCase() === "html";
 
@@ -68,8 +69,12 @@ function CodeBlock({
             <Download className="w-3.5 h-3.5" />
           </button>
           <button
-            className="p-1.5 hover:bg-[#00ff4120] transition-colors text-[#00ff4180] hover:text-[#00ff41]"
-            title="Wrap text"
+            onClick={() => setWordWrap(!wordWrap)}
+            className={cn(
+              "p-1.5 hover:bg-[#00ff4120] transition-colors",
+              wordWrap ? "text-[#00ff41] bg-[#00ff4120]" : "text-[#00ff4180] hover:text-[#00ff41]"
+            )}
+            title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
           >
             <WrapText className="w-3.5 h-3.5" />
           </button>
@@ -86,8 +91,11 @@ function CodeBlock({
           </button>
         </div>
       </div>
-      <div className="overflow-x-auto">
-        <pre className="m-0 p-4 bg-transparent text-[13px] leading-relaxed">
+      <div className={wordWrap ? "" : "overflow-x-auto"}>
+        <pre className={cn(
+          "m-0 p-4 bg-transparent text-[13px] leading-relaxed",
+          wordWrap && "whitespace-pre-wrap break-words"
+        )}>
           <code className="text-[#00ff41]">{value}</code>
         </pre>
       </div>

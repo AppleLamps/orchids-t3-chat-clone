@@ -121,6 +121,7 @@ type StreamingState = {
   chatId: string | null;
   messageId: string | null;
   content: string;
+  abortController: AbortController | null;
 };
 
 interface ChatStoreState {
@@ -144,6 +145,8 @@ interface ChatStoreState {
   clearAttachments: () => void;
 
   sendMessage: (content: string) => Promise<void>;
+  stopGeneration: () => void;
+  regenerateLastMessage: () => Promise<void>;
   selectChat: (chatId: string) => void;
   deleteChat: (chatId: string) => void;
   clearCurrentChatHistory: () => void;
@@ -181,7 +184,7 @@ export const useChatStore = create<ChatStoreState>()(
     isLoading: false,
     attachments: [],
     selectedCategory: null,
-    streaming: { chatId: null, messageId: null, content: "" },
+    streaming: { chatId: null, messageId: null, content: "", abortController: null },
     _hydrated: false,
 
     _hydrateFromStorage: () => {
@@ -195,9 +198,12 @@ export const useChatStore = create<ChatStoreState>()(
     setSelectedCategory: (category) => set({ selectedCategory: category }),
 
     createNewChat: () => {
-      const { attachments } = get();
+      const { attachments, streaming } = get();
       attachments.forEach(revokePreviewUrl);
-      set({ currentChatId: null, attachments: [], selectedCategory: null, streaming: { chatId: null, messageId: null, content: "" } });
+      if (streaming.abortController) {
+        streaming.abortController.abort();
+      }
+      set({ currentChatId: null, attachments: [], selectedCategory: null, streaming: { chatId: null, messageId: null, content: "", abortController: null } });
     },
 
     addAttachment: (attachment) => {
@@ -221,6 +227,12 @@ export const useChatStore = create<ChatStoreState>()(
       const state = get();
       if (!content.trim() && state.attachments.length === 0) return;
 
+      // Abort any existing generation
+      if (state.streaming.abortController) {
+        state.streaming.abortController.abort();
+      }
+
+      const abortController = new AbortController();
       set({ isLoading: true });
 
       const userMessageId = generateId();
@@ -265,7 +277,7 @@ export const useChatStore = create<ChatStoreState>()(
             }
             : chat
         ),
-        streaming: { chatId, messageId: assistantMessageId, content: "" },
+        streaming: { chatId, messageId: assistantMessageId, content: "", abortController },
       }));
 
       try {
@@ -307,11 +319,18 @@ export const useChatStore = create<ChatStoreState>()(
           });
 
         const systemPrompt = selectedCategory ? CATEGORY_SYSTEM_PROMPTS[selectedCategory] : null;
+        const { webSearchEnabled } = get();
 
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: messagesForApi, model: selectedModel, systemPrompt }),
+          body: JSON.stringify({
+            messages: messagesForApi,
+            model: selectedModel,
+            systemPrompt,
+            webSearchEnabled,
+          }),
+          signal: abortController.signal,
         });
 
         if (!response.ok) throw new Error(`API error: ${response.status}`);
@@ -321,35 +340,42 @@ export const useChatStore = create<ChatStoreState>()(
 
         let assistantContent = "";
         let firstContent = true;
+        let buffer = "";
 
         if (reader) {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
 
-            const chunk = decoder.decode(value);
-            const lines = chunk.split("\n");
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              // Keep the last incomplete line in the buffer
+              buffer = lines.pop() || "";
 
-            for (const line of lines) {
-              if (!line.startsWith("data: ")) continue;
-              const data = line.slice(6);
-              if (data === "[DONE]") continue;
+              for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
 
-              try {
-                const parsed = JSON.parse(data);
-                const delta: unknown = parsed.choices?.[0]?.delta?.content;
-                if (typeof delta === "string" && delta.length > 0) {
-                  if (firstContent) {
-                    set({ isLoading: false });
-                    firstContent = false;
+                try {
+                  const parsed = JSON.parse(data);
+                  const delta: unknown = parsed.choices?.[0]?.delta?.content;
+                  if (typeof delta === "string" && delta.length > 0) {
+                    if (firstContent) {
+                      set({ isLoading: false });
+                      firstContent = false;
+                    }
+                    assistantContent += delta;
+                    set((s) => ({ streaming: { ...s.streaming, content: assistantContent } }));
                   }
-                  assistantContent += delta;
-                  set((s) => ({ streaming: { ...s.streaming, content: assistantContent } }));
+                } catch {
+                  // ignore malformed SSE lines
                 }
-              } catch {
-                // ignore malformed SSE lines
               }
             }
+          } finally {
+            reader.releaseLock();
           }
         }
 
@@ -366,11 +392,34 @@ export const useChatStore = create<ChatStoreState>()(
               }
               : chatItem
           ),
-          streaming: { chatId: null, messageId: null, content: "" },
+          streaming: { chatId: null, messageId: null, content: "", abortController: null },
         }));
 
         get().clearAttachments();
       } catch (error) {
+        // Handle abort gracefully
+        if (error instanceof Error && error.name === "AbortError") {
+          const currentContent = get().streaming.content;
+          set((s) => ({
+            chats: s.chats.map((chatItem) =>
+              chatItem.id === chatId
+                ? {
+                  ...chatItem,
+                  messages: chatItem.messages.map((m) =>
+                    m.id === assistantMessageId
+                      ? { ...m, content: currentContent || "[Generation stopped]" }
+                      : m
+                  ),
+                  updatedAt: new Date(),
+                }
+                : chatItem
+            ),
+            streaming: { chatId: null, messageId: null, content: "", abortController: null },
+            isLoading: false,
+          }));
+          return;
+        }
+
         console.error("Failed to send message:", error);
         const message = `Error: ${error instanceof Error ? error.message : "Failed to get response"}`;
 
@@ -385,11 +434,55 @@ export const useChatStore = create<ChatStoreState>()(
               }
               : chatItem
           ),
-          streaming: { chatId: null, messageId: null, content: "" },
+          streaming: { chatId: null, messageId: null, content: "", abortController: null },
         }));
       } finally {
         set({ isLoading: false });
       }
+    },
+
+    stopGeneration: () => {
+      const { streaming } = get();
+      if (streaming.abortController) {
+        streaming.abortController.abort();
+      }
+    },
+
+    regenerateLastMessage: async () => {
+      const state = get();
+      const { currentChatId, chats } = state;
+      if (!currentChatId) return;
+
+      const chat = chats.find((c) => c.id === currentChatId);
+      if (!chat || chat.messages.length < 2) return;
+
+      // Find the last user message
+      let lastUserMessageIndex = -1;
+      for (let i = chat.messages.length - 1; i >= 0; i--) {
+        if (chat.messages[i].role === "user") {
+          lastUserMessageIndex = i;
+          break;
+        }
+      }
+
+      if (lastUserMessageIndex === -1) return;
+
+      const lastUserMessage = chat.messages[lastUserMessageIndex];
+      const userContent = typeof lastUserMessage.content === "string"
+        ? lastUserMessage.content
+        : lastUserMessage.content.filter(c => c.type === "text").map(c => "text" in c ? c.text : "").join("");
+
+      // Remove all messages from the last user message onwards
+      set((s) => ({
+        chats: s.chats.map((c) =>
+          c.id === currentChatId
+            ? { ...c, messages: c.messages.slice(0, lastUserMessageIndex) }
+            : c
+        ),
+      }));
+
+      // Re-send the message
+      await get().sendMessage(userContent);
     },
 
     selectChat: (chatId) => {

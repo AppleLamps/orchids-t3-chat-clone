@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { ArrowUp, ChevronDown, Globe, Paperclip, X, FileText, Image, Search, Eye, Brain } from "lucide-react";
+import { ArrowUp, ChevronDown, Globe, Paperclip, X, FileText, Image, Search, Eye, Brain, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS } from "@/types/chat";
 import type { ModelId, Attachment } from "@/types/chat";
@@ -14,6 +14,8 @@ const SUPPORTED_FILE_TYPES = [...SUPPORTED_IMAGE_TYPES, "application/pdf"];
 interface ChatInputFormProps {
   onSend: (content: string) => void;
   isLoading: boolean;
+  isStreaming: boolean;
+  onStopGeneration: () => void;
   selectedModel: ModelId;
   onModelChange: (model: ModelId) => void;
   webSearchEnabled: boolean;
@@ -77,6 +79,8 @@ const ModelIcon = ({ icon }: { icon: string }) => {
 export default function ChatInputForm({
   onSend,
   isLoading,
+  isStreaming,
+  onStopGeneration,
   selectedModel,
   onModelChange,
   webSearchEnabled,
@@ -278,18 +282,32 @@ export default function ChatInputForm({
               Attach
             </button>
 
-            {/* Send Button */}
-            <button
-              type="submit"
-              disabled={isLoading || (!input.trim() && attachments.length === 0)}
-              className={cn(
-                "ml-auto w-9 h-9 flex items-center justify-center bg-[#00ff4120] border border-[#00ff41] text-[#00ff41] cursor-pointer transition-all duration-200",
-                "hover:bg-[#00ff41] hover:text-[#0a0a0a] hover:shadow-[0_0_10px_#00ff4140,0_0_20px_#00ff4120]",
-                "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#00ff4120] disabled:hover:text-[#00ff41]"
-              )}
-            >
-              <ArrowUp className="w-[18px] h-[18px]" />
-            </button>
+            {/* Send/Stop Button */}
+            {isStreaming ? (
+              <button
+                type="button"
+                onClick={onStopGeneration}
+                className={cn(
+                  "ml-auto w-9 h-9 flex items-center justify-center bg-[#ff5f5720] border border-[#ff5f57] text-[#ff5f57] cursor-pointer transition-all duration-200",
+                  "hover:bg-[#ff5f57] hover:text-[#0a0a0a] hover:shadow-[0_0_10px_#ff5f5740,0_0_20px_#ff5f5720]"
+                )}
+                title="Stop generation"
+              >
+                <Square className="w-[14px] h-[14px] fill-current" />
+              </button>
+            ) : (
+              <button
+                type="submit"
+                disabled={isLoading || (!input.trim() && attachments.length === 0)}
+                className={cn(
+                  "ml-auto w-9 h-9 flex items-center justify-center bg-[#00ff4120] border border-[#00ff41] text-[#00ff41] cursor-pointer transition-all duration-200",
+                  "hover:bg-[#00ff41] hover:text-[#0a0a0a] hover:shadow-[0_0_10px_#00ff4140,0_0_20px_#00ff4120]",
+                  "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#00ff4120] disabled:hover:text-[#00ff41]"
+                )}
+              >
+                <ArrowUp className="w-[18px] h-[18px]" />
+              </button>
+            )}
           </div>
         </form>
       </div>

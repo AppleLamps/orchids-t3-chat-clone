@@ -4,6 +4,7 @@ interface ChatRequest {
   messages: Array<{ role: string; content: MessageContent }>;
   model?: ModelId;
   systemPrompt?: string | null;
+  webSearchEnabled?: boolean;
 }
 
 const CONNECT_TIMEOUT_MS = 60_000;
@@ -19,7 +20,7 @@ function isAbortError(error: unknown): boolean {
 export async function POST(req: Request) {
   try {
     const body = await req.json() as ChatRequest;
-    const { messages, model, systemPrompt } = body;
+    const { messages, model, systemPrompt, webSearchEnabled } = body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(JSON.stringify({ error: "Invalid messages format" }), {
@@ -50,6 +51,18 @@ export async function POST(req: Request) {
       ? [{ role: "system", content: systemPrompt }, ...messages]
       : messages;
 
+    // Build request body with optional web search plugin
+    const requestBody: Record<string, unknown> = {
+      model: model || "x-ai/grok-4.1-fast",
+      messages: messagesWithSystem,
+      stream: true,
+    };
+
+    // Enable web search via OpenRouter plugins when requested
+    if (webSearchEnabled) {
+      requestBody.plugins = [{ id: "web" }];
+    }
+
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -58,11 +71,7 @@ export async function POST(req: Request) {
         "HTTP-Referer": req.headers.get("origin") || "http://localhost:3000",
         "X-Title": "T3 Chat Clone",
       },
-      body: JSON.stringify({
-        model: model || "x-ai/grok-4.1-fast",
-        messages: messagesWithSystem,
-        stream: true,
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
 
