@@ -29,33 +29,6 @@ export interface Message {
 
 export type CategoryId = "create" | "explore" | "code" | "learn";
 
-export interface Chat {
-  id: string;
-  title: string;
-  messages: Message[];
-  createdAt: Date;
-  updatedAt: Date;
-  category?: CategoryId | null;
-}
-
-export interface Attachment {
-  id: string;
-  type: "image" | "pdf";
-  name: string;
-  mimeType: string;
-  size: number;
-  /**
-   * File is intentionally kept out of persisted chat history (localStorage quota).
-   * We only convert to Base64/DataURL at send-time.
-   */
-  file: File;
-  /**
-   * Optional object URL for lightweight previews in the composer.
-   * Must be revoked when removing/clearing attachments.
-   */
-  previewUrl?: string;
-}
-
 export type ModelCapability = "vision" | "reasoning";
 
 export interface Model {
@@ -75,3 +48,31 @@ export const MODELS: Model[] = [
 ];
 
 export type ModelId = Model["id"];
+
+export interface Chat {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: Date;
+  updatedAt: Date;
+  category?: CategoryId | null;
+  model?: ModelId | null;
+}
+
+export interface Attachment {
+  id: string;
+  type: "image" | "pdf";
+  name: string;
+  mimeType: string;
+  size: number;
+  /**
+   * File is intentionally kept out of persisted chat history (localStorage quota).
+   * We only convert to Base64/DataURL at send-time.
+   */
+  file: File;
+  /**
+   * Optional object URL for lightweight previews in the composer.
+   * Must be revoked when removing/clearing attachments.
+   */
+  previewUrl?: string;
+}

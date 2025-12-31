@@ -253,6 +253,7 @@ export const useChatStore = create<ChatStoreState>()(
           createdAt: new Date(),
           updatedAt: new Date(),
           category: state.selectedCategory,
+          model: state.selectedModel,
         };
         set((s) => ({ chats: [newChat, ...s.chats], currentChatId: chatId }));
       } else {
@@ -492,10 +493,12 @@ export const useChatStore = create<ChatStoreState>()(
       const { attachments, chats } = get();
       attachments.forEach(revokePreviewUrl);
       const chat = chats.find((c) => c.id === chatId);
+      const defaultModel = MODELS.find((m) => m.isDefault)?.id ?? MODELS[0].id;
       set({
         currentChatId: chatId,
         attachments: [],
         selectedCategory: chat?.category ?? null,
+        selectedModel: chat?.model ?? defaultModel,
       });
     },
 

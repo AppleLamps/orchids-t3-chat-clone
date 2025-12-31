@@ -3,8 +3,12 @@
 import { useEffect, useRef, memo, useState } from "react";
 import type { Message, MessageContent } from "@/types/chat";
 import { MarkdownRenderer } from "@/components/ui/markdown-renderer";
-import { Copy, Check, RefreshCw, AlertCircle } from "lucide-react";
+import { Copy, Check, RefreshCw, AlertCircle, ArrowDown, X, ZoomIn } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 
 interface ChatMessagesProps {
   messages: Message[];
@@ -62,18 +66,29 @@ const UserMessage = memo(function UserMessage({
   timestamp?: Date;
   images?: string[];
 }) {
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
   return (
     <div className="flex justify-end w-full group">
       <div className="max-w-[85%] py-2 border-r-2 border-[#00ff41] pr-4">
         {images && images.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-2 justify-end">
             {images.map((src, idx) => (
-              <img
+              <button
                 key={idx}
-                src={src}
-                alt={`Attachment ${idx + 1}`}
-                className="max-w-[200px] max-h-[200px] object-cover border border-[#00ff4130] rounded"
-              />
+                onClick={() => setLightboxImage(src)}
+                className="relative group/img cursor-zoom-in"
+                aria-label={`View attachment ${idx + 1} full size`}
+              >
+                <img
+                  src={src}
+                  alt={`Attachment ${idx + 1}`}
+                  className="max-w-[200px] max-h-[200px] object-cover border border-[#00ff4130] rounded transition-all hover:border-[#00ff41]"
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                  <ZoomIn className="w-6 h-6 text-white" />
+                </div>
+              </button>
             ))}
           </div>
         )}
@@ -89,6 +104,29 @@ const UserMessage = memo(function UserMessage({
           </p>
         )}
       </div>
+
+      {/* Image Lightbox */}
+      <Dialog open={!!lightboxImage} onOpenChange={(open) => !open && setLightboxImage(null)}>
+        <DialogContent
+          className="max-w-[90vw] max-h-[90vh] p-0 bg-transparent border-none overflow-hidden"
+          style={{ width: 'auto', height: 'auto' }}
+        >
+          <button
+            onClick={() => setLightboxImage(null)}
+            className="absolute top-2 right-2 z-10 p-2 bg-black/70 text-white hover:bg-black transition-colors rounded-full"
+            aria-label="Close lightbox"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          {lightboxImage && (
+            <img
+              src={lightboxImage}
+              alt="Full size attachment"
+              className="max-w-[90vw] max-h-[85vh] object-contain"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 });
@@ -198,6 +236,13 @@ export function ChatMessages({ messages, isLoading, streamingMessageId, streamin
   const lastMessageCountRef = useRef(messages.length);
   const lastContentLengthRef = useRef(0);
   const userScrolledRef = useRef(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  const scrollToBottom = () => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    userScrolledRef.current = false;
+    setShowScrollButton(false);
+  };
 
   // Detect if user has scrolled up
   useEffect(() => {
@@ -208,11 +253,12 @@ export function ChatMessages({ messages, isLoading, streamingMessageId, streamin
       const { scrollTop, scrollHeight, clientHeight } = container;
       const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
       userScrolledRef.current = !isAtBottom;
+      setShowScrollButton(!isAtBottom && messages.length > 0);
     };
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [messages.length]);
 
   useEffect(() => {
     const currentContentLength = messages.reduce((acc, m) => {
@@ -279,6 +325,23 @@ export function ChatMessages({ messages, isLoading, streamingMessageId, streamin
         <LoadingIndicator isStreaming={!!streamingContent} />
       )}
       <div ref={bottomRef} />
+
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className={cn(
+            "fixed bottom-[220px] right-8 z-40 p-2.5",
+            "bg-[#111111] border border-[#00ff41] text-[#00ff41]",
+            "hover:bg-[#00ff41] hover:text-[#0a0a0a]",
+            "transition-all duration-200 shadow-[0_0_10px_#00ff4140]",
+            "animate-in fade-in slide-in-from-bottom-2"
+          )}
+          aria-label="Scroll to bottom"
+        >
+          <ArrowDown className="w-4 h-4" />
+        </button>
+      )}
     </div>
   );
 }

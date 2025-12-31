@@ -2,9 +2,19 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Trash2, X } from "lucide-react";
 import type { Chat } from "@/types/chat";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 interface SidebarProps {
   chats: Chat[];
@@ -32,6 +42,7 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [chatToDelete, setChatToDelete] = useState<Chat | null>(null);
   const displayedChats = searchQuery ? searchChats(searchQuery) : chats;
 
   const handleSelectChat = (id: string) => {
@@ -39,6 +50,13 @@ export default function Sidebar({
     // Close sidebar on mobile after selection
     if (window.innerWidth < 768) {
       onClose?.();
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (chatToDelete) {
+      onDeleteChat(chatToDelete.id);
+      setChatToDelete(null);
     }
   };
 
@@ -85,13 +103,25 @@ export default function Sidebar({
         </button>
 
         {/* Search Input */}
-        <input
-          type="text"
-          className="mt-4 w-full bg-[#1a1a1a] border border-[#00ff4130] text-[#00ff41] py-2.5 px-3 text-[12px] outline-none placeholder:text-[#00ff4180] focus:border-[#00ff41] focus:green-glow-box transition-all"
-          placeholder="$ grep threads..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+        <div className="relative mt-4">
+          <input
+            type="text"
+            className="w-full bg-[#1a1a1a] border border-[#00ff4130] text-[#00ff41] py-2.5 px-3 pr-8 text-[12px] outline-none placeholder:text-[#00ff4180] focus:border-[#00ff41] focus:green-glow-box transition-all"
+            placeholder="$ grep threads..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            aria-label="Search chats"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#00ff4180] hover:text-[#00ff41] transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+        </div>
 
         {/* Chat List */}
         <div className="flex-1 overflow-auto py-4">
@@ -116,7 +146,7 @@ export default function Sidebar({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onDeleteChat(chat.id);
+                  setChatToDelete(chat);
                 }}
                 className="opacity-0 group-hover:opacity-100 p-1 text-[#00ff4180] hover:text-[#ff5f57] transition-all"
                 aria-label={`Delete chat: ${chat.title}`}
@@ -162,6 +192,34 @@ export default function Sidebar({
         </div>
       </div>
       </aside>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!chatToDelete} onOpenChange={(open) => !open && setChatToDelete(null)}>
+        <AlertDialogContent
+          className="bg-[#111111] border border-[#ff5f57] max-w-sm"
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#ff5f57]">Delete Chat?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#00ff4180] text-[13px]">
+              This will permanently delete &quot;{chatToDelete?.title}&quot;. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel
+              className="bg-transparent border border-[#00ff4130] text-[#00ff41] hover:bg-[#00ff4120] hover:border-[#00ff41] hover:text-[#00ff41]"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-[#ff5f5720] border border-[#ff5f57] text-[#ff5f57] hover:bg-[#ff5f57] hover:text-[#0a0a0a]"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
