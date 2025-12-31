@@ -27,12 +27,15 @@ export interface Message {
   createdAt: Date;
 }
 
+export type CategoryId = "create" | "explore" | "code" | "learn";
+
 export interface Chat {
   id: string;
   title: string;
   messages: Message[];
   createdAt: Date;
   updatedAt: Date;
+  category?: CategoryId | null;
 }
 
 export interface Attachment {

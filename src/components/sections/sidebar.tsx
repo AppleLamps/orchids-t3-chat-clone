@@ -119,6 +119,7 @@ export default function Sidebar({
                   onDeleteChat(chat.id);
                 }}
                 className="opacity-0 group-hover:opacity-100 p-1 text-[#00ff4180] hover:text-[#ff5f57] transition-all"
+                aria-label={`Delete chat: ${chat.title}`}
               >
                 <Trash2 className="h-3 w-3" />
               </button>

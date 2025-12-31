@@ -181,7 +181,7 @@ export default function ChatInputForm({
       {fileError && (
         <div className="mb-2 px-3 py-2 bg-[#ff5f5720] border border-[#ff5f57] text-sm text-[#ff5f57] flex items-center justify-between">
           <span>{fileError}</span>
-          <button type="button" onClick={() => setFileError(null)} className="p-0.5 hover:bg-[#ff5f5740]">
+          <button type="button" onClick={() => setFileError(null)} className="p-0.5 hover:bg-[#ff5f5740]" aria-label="Dismiss error">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -212,6 +212,7 @@ export default function ChatInputForm({
                   type="button"
                   onClick={() => onRemoveAttachment(att.id)}
                   className="ml-1 p-0.5 hover:bg-[#00ff4120] transition-colors"
+                  aria-label={`Remove ${att.name}`}
                 >
                   <X className="w-3 h-3 text-[#00ff41]" />
                 </button>
@@ -243,6 +244,9 @@ export default function ChatInputForm({
               type="button"
               onClick={() => setShowModelSelector(!showModelSelector)}
               className="flex items-center gap-1.5 bg-[#111111] border border-[#00ff4130] text-[#00ff41] py-1.5 px-3 text-[12px] cursor-pointer hover:border-[#00ff41] transition-colors"
+              aria-label={`Select model, current: ${currentModel.name}`}
+              aria-expanded={showModelSelector}
+              aria-haspopup="listbox"
             >
               {currentModel.name}
               <ChevronDown className="w-3 h-3" />
@@ -258,6 +262,8 @@ export default function ChatInputForm({
                   ? "text-[#00ff41] border-[#00ff41] bg-[#00ff4120]"
                   : "text-[#00ff4180] hover:text-[#00ff41] hover:border-[#00ff41]"
               )}
+              aria-label={webSearchEnabled ? "Disable web search" : "Enable web search"}
+              aria-pressed={webSearchEnabled}
             >
               <Globe className="w-3.5 h-3.5" />
               Search
@@ -276,6 +282,7 @@ export default function ChatInputForm({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-1.5 bg-transparent border border-[#00ff4130] text-[#00ff4180] py-1.5 px-3 text-[12px] cursor-pointer transition-all duration-200 hover:text-[#00ff41] hover:border-[#00ff41]"
+              aria-label="Attach files"
             >
               <Paperclip className="w-3.5 h-3.5" />
               Attach
@@ -290,7 +297,7 @@ export default function ChatInputForm({
                   "ml-auto w-9 h-9 flex items-center justify-center bg-[#ff5f5720] border border-[#ff5f57] text-[#ff5f57] cursor-pointer transition-all duration-200",
                   "hover:bg-[#ff5f57] hover:text-[#0a0a0a] hover:shadow-[0_0_10px_#ff5f5740,0_0_20px_#ff5f5720]"
                 )}
-                title="Stop generation"
+                aria-label="Stop generation"
               >
                 <Square className="w-[14px] h-[14px] fill-current" />
               </button>
@@ -303,6 +310,7 @@ export default function ChatInputForm({
                   "hover:bg-[#00ff41] hover:text-[#0a0a0a] hover:shadow-[0_0_10px_#00ff4140,0_0_20px_#00ff4120]",
                   "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#00ff4120] disabled:hover:text-[#00ff41]"
                 )}
+                aria-label="Send message"
               >
                 <ArrowUp className="w-[18px] h-[18px]" />
               </button>

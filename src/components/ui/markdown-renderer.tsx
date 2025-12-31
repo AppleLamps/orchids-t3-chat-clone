@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { Check, Copy, Download, WrapText, Eye } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -11,6 +12,54 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+// Custom theme matching the terminal aesthetic
+const terminalTheme: { [key: string]: React.CSSProperties } = {
+  'code[class*="language-"]': {
+    color: "#00ff41",
+    background: "transparent",
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: "13px",
+    lineHeight: "1.6",
+  },
+  'pre[class*="language-"]': {
+    color: "#00ff41",
+    background: "transparent",
+    margin: 0,
+    padding: "1rem",
+  },
+  comment: { color: "#00aa33" },
+  prolog: { color: "#00aa33" },
+  doctype: { color: "#00aa33" },
+  cdata: { color: "#00aa33" },
+  punctuation: { color: "#00cc33" },
+  property: { color: "#00ffaa" },
+  tag: { color: "#00ffaa" },
+  boolean: { color: "#ffaa00" },
+  number: { color: "#ffaa00" },
+  constant: { color: "#ffaa00" },
+  symbol: { color: "#ffaa00" },
+  selector: { color: "#00ff88" },
+  "attr-name": { color: "#00ff88" },
+  string: { color: "#88ff00" },
+  char: { color: "#88ff00" },
+  builtin: { color: "#00ffff" },
+  inserted: { color: "#00ff41" },
+  operator: { color: "#00cc33" },
+  entity: { color: "#00ffaa", cursor: "help" },
+  url: { color: "#00ffaa" },
+  variable: { color: "#00ff88" },
+  atrule: { color: "#00ffaa" },
+  "attr-value": { color: "#88ff00" },
+  keyword: { color: "#00ffff" },
+  function: { color: "#00ffaa" },
+  "class-name": { color: "#00ffaa" },
+  regex: { color: "#ffaa00" },
+  important: { color: "#ff5f57", fontWeight: "bold" },
+  bold: { fontWeight: "bold" },
+  italic: { fontStyle: "italic" },
+  deleted: { color: "#ff5f57" },
+};
 
 interface MarkdownRendererProps {
   content: string;
@@ -56,7 +105,7 @@ function CodeBlock({
             <button
               onClick={() => setPreviewOpen(true)}
               className="p-1.5 hover:bg-[#00ff4120] transition-colors text-[#00ff4180] hover:text-[#00ff41]"
-              title="Preview HTML"
+              aria-label="Preview HTML"
             >
               <Eye className="w-3.5 h-3.5" />
             </button>
@@ -64,7 +113,7 @@ function CodeBlock({
           <button
             onClick={downloadCode}
             className="p-1.5 hover:bg-[#00ff4120] transition-colors text-[#00ff4180] hover:text-[#00ff41]"
-            title="Download"
+            aria-label="Download code"
           >
             <Download className="w-3.5 h-3.5" />
           </button>
@@ -74,14 +123,15 @@ function CodeBlock({
               "p-1.5 hover:bg-[#00ff4120] transition-colors",
               wordWrap ? "text-[#00ff41] bg-[#00ff4120]" : "text-[#00ff4180] hover:text-[#00ff41]"
             )}
-            title={wordWrap ? "Disable word wrap" : "Enable word wrap"}
+            aria-label={wordWrap ? "Disable word wrap" : "Enable word wrap"}
+            aria-pressed={wordWrap}
           >
             <WrapText className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={copyToClipboard}
             className="p-1.5 hover:bg-[#00ff4120] transition-colors text-[#00ff4180] hover:text-[#00ff41]"
-            title="Copy"
+            aria-label={copied ? "Copied" : "Copy code"}
           >
             {copied ? (
               <Check className="w-3.5 h-3.5 text-[#28c840]" />
@@ -92,12 +142,26 @@ function CodeBlock({
         </div>
       </div>
       <div className={wordWrap ? "" : "overflow-x-auto"}>
-        <pre className={cn(
-          "m-0 p-4 bg-transparent text-[13px] leading-relaxed",
-          wordWrap && "whitespace-pre-wrap break-words"
-        )}>
-          <code className="text-[#00ff41]">{value}</code>
-        </pre>
+        <SyntaxHighlighter
+          language={language || "text"}
+          style={terminalTheme}
+          customStyle={{
+            margin: 0,
+            padding: "1rem",
+            background: "transparent",
+            fontSize: "13px",
+            lineHeight: "1.6",
+          }}
+          wrapLines={wordWrap}
+          wrapLongLines={wordWrap}
+          codeTagProps={{
+            style: {
+              fontFamily: "'JetBrains Mono', monospace",
+            },
+          }}
+        >
+          {value}
+        </SyntaxHighlighter>
       </div>
 
       {isHtml && (

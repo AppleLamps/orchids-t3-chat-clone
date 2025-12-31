@@ -2,11 +2,11 @@
 
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import type { Chat, Message, ModelId, Attachment, MessageContent } from "@/types/chat";
+import type { Chat, Message, ModelId, Attachment, MessageContent, CategoryId } from "@/types/chat";
 import { MODELS } from "@/types/chat";
 import { useEffect, useState } from "react";
 
-export type CategoryId = "create" | "explore" | "code" | "learn";
+export type { CategoryId };
 
 const CATEGORY_SYSTEM_PROMPTS: Record<CategoryId, string> = {
   create: "You are a creative assistant. Help users with writing, brainstorming, storytelling, content creation, and artistic ideas. Be imaginative, inspiring, and offer unique perspectives. Encourage creativity and think outside the box.",
@@ -252,6 +252,7 @@ export const useChatStore = create<ChatStoreState>()(
           messages: [userMessage],
           createdAt: new Date(),
           updatedAt: new Date(),
+          category: state.selectedCategory,
         };
         set((s) => ({ chats: [newChat, ...s.chats], currentChatId: chatId }));
       } else {
@@ -318,7 +319,9 @@ export const useChatStore = create<ChatStoreState>()(
             return { role: msg.role, content: msg.content };
           });
 
-        const systemPrompt = selectedCategory ? CATEGORY_SYSTEM_PROMPTS[selectedCategory] : null;
+        // Use chat's category if available, otherwise fall back to selected category
+        const category = chat.category ?? selectedCategory;
+        const systemPrompt = category ? CATEGORY_SYSTEM_PROMPTS[category] : null;
         const { webSearchEnabled } = get();
 
         const response = await fetch("/api/chat", {
@@ -486,9 +489,14 @@ export const useChatStore = create<ChatStoreState>()(
     },
 
     selectChat: (chatId) => {
-      const { attachments } = get();
+      const { attachments, chats } = get();
       attachments.forEach(revokePreviewUrl);
-      set({ currentChatId: chatId, attachments: [] });
+      const chat = chats.find((c) => c.id === chatId);
+      set({
+        currentChatId: chatId,
+        attachments: [],
+        selectedCategory: chat?.category ?? null,
+      });
     },
 
     deleteChat: (chatId) => {

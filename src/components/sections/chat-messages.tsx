@@ -145,7 +145,7 @@ const AssistantMessage = memo(function AssistantMessage({
               <button
                 onClick={handleCopy}
                 className="p-1.5 text-[#00ff4160] hover:text-[#00ff41] hover:bg-[#00ff4120] transition-all"
-                title="Copy message"
+                aria-label={copied ? "Copied" : "Copy message"}
               >
                 {copied ? (
                   <Check className="w-3.5 h-3.5 text-[#28c840]" />
@@ -157,7 +157,7 @@ const AssistantMessage = memo(function AssistantMessage({
                 <button
                   onClick={onRegenerate}
                   className="p-1.5 text-[#00ff4160] hover:text-[#00ff41] hover:bg-[#00ff4120] transition-all"
-                  title="Regenerate response"
+                  aria-label="Regenerate response"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                 </button>
@@ -175,13 +175,18 @@ const AssistantMessage = memo(function AssistantMessage({
   );
 });
 
-const LoadingIndicator = memo(function LoadingIndicator() {
+const LoadingIndicator = memo(function LoadingIndicator({ isStreaming }: { isStreaming?: boolean }) {
   return (
-    <div className="flex flex-col">
-      <div className="flex gap-2 py-2">
-        <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "0ms" }} />
-        <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "150ms" }} />
-        <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "300ms" }} />
+    <div className="flex flex-col" role="status" aria-live="polite">
+      <div className="flex items-center gap-3 py-2">
+        <div className="flex gap-1.5">
+          <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "0ms" }} />
+          <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "150ms" }} />
+          <span className="w-2 h-4 bg-[#00ff41] animate-pulse" style={{ animationDelay: "300ms" }} />
+        </div>
+        <span className="text-[12px] text-[#00ff4180]">
+          {isStreaming ? "Generating..." : "Connecting..."}
+        </span>
       </div>
     </div>
   );
@@ -270,7 +275,9 @@ export function ChatMessages({ messages, isLoading, streamingMessageId, streamin
           </div>
         );
       })}
-      {isLoading && messages[messages.length - 1]?.role === "user" && <LoadingIndicator />}
+      {isLoading && messages[messages.length - 1]?.role === "user" && (
+        <LoadingIndicator isStreaming={!!streamingContent} />
+      )}
       <div ref={bottomRef} />
     </div>
   );
