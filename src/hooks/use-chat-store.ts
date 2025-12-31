@@ -149,6 +149,7 @@ interface ChatStoreState {
   regenerateLastMessage: () => Promise<void>;
   selectChat: (chatId: string) => void;
   deleteChat: (chatId: string) => void;
+  renameChat: (chatId: string, newTitle: string) => void;
   clearCurrentChatHistory: () => void;
   searchChats: (query: string) => Chat[];
   _hydrateFromStorage: () => void;
@@ -506,6 +507,15 @@ export const useChatStore = create<ChatStoreState>()(
       set((s) => ({
         chats: s.chats.filter((c) => c.id !== chatId),
         currentChatId: s.currentChatId === chatId ? null : s.currentChatId,
+      }));
+    },
+
+    renameChat: (chatId, newTitle) => {
+      if (!newTitle.trim()) return;
+      set((s) => ({
+        chats: s.chats.map((c) =>
+          c.id === chatId ? { ...c, title: newTitle.trim(), updatedAt: new Date() } : c
+        ),
       }));
     },
 

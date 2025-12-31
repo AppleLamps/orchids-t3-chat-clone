@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Trash2, X } from "lucide-react";
+import { Trash2, X, Pencil, Check, Download } from "lucide-react";
 import type { Chat } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +21,7 @@ interface SidebarProps {
   currentChatId: string | null;
   onSelectChat: (id: string) => void;
   onDeleteChat: (id: string) => void;
+  onRenameChat?: (id: string, newTitle: string) => void;
   onNewChat: () => void;
   onClearHistory: () => void;
   hasCurrentChat: boolean;
@@ -34,6 +35,7 @@ export default function Sidebar({
   currentChatId,
   onSelectChat,
   onDeleteChat,
+  onRenameChat,
   onNewChat,
   onClearHistory,
   hasCurrentChat,
@@ -43,9 +45,20 @@ export default function Sidebar({
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [chatToDelete, setChatToDelete] = useState<Chat | null>(null);
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState("");
+  const editInputRef = useRef<HTMLInputElement>(null);
   const displayedChats = searchQuery ? searchChats(searchQuery) : chats;
 
+  useEffect(() => {
+    if (editingChatId && editInputRef.current) {
+      editInputRef.current.focus();
+      editInputRef.current.select();
+    }
+  }, [editingChatId]);
+
   const handleSelectChat = (id: string) => {
+    if (editingChatId) return; // Don't select while editing
     onSelectChat(id);
     // Close sidebar on mobile after selection
     if (window.innerWidth < 768) {
@@ -58,6 +71,74 @@ export default function Sidebar({
       onDeleteChat(chatToDelete.id);
       setChatToDelete(null);
     }
+  };
+
+  const startEditing = (chat: Chat) => {
+    setEditingChatId(chat.id);
+    setEditValue(chat.title);
+  };
+
+  const saveEdit = () => {
+    if (editingChatId && editValue.trim() && onRenameChat) {
+      onRenameChat(editingChatId, editValue.trim());
+    }
+    setEditingChatId(null);
+    setEditValue("");
+  };
+
+  const cancelEdit = () => {
+    setEditingChatId(null);
+    setEditValue("");
+  };
+
+  const handleEditKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      saveEdit();
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      cancelEdit();
+    }
+  };
+
+  const exportChat = (chat: Chat) => {
+    const getTextContent = (content: Chat["messages"][0]["content"]): string => {
+      if (typeof content === "string") return content;
+      return content
+        .filter((c) => c.type === "text")
+        .map((c) => ("text" in c ? c.text : ""))
+        .join("");
+    };
+
+    const lines: string[] = [
+      `# ${chat.title}`,
+      "",
+      `**Exported:** ${new Date().toLocaleString()}`,
+      `**Created:** ${new Date(chat.createdAt).toLocaleString()}`,
+      "",
+      "---",
+      "",
+    ];
+
+    for (const msg of chat.messages) {
+      const role = msg.role === "user" ? "**You:**" : "**Assistant:**";
+      const content = getTextContent(msg.content);
+      lines.push(role);
+      lines.push("");
+      lines.push(content);
+      lines.push("");
+      lines.push("---");
+      lines.push("");
+    }
+
+    const markdown = lines.join("\n");
+    const blob = new Blob([markdown], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${chat.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -132,7 +213,8 @@ export default function Sidebar({
                 "group flex items-center gap-2 py-2 px-2 cursor-pointer transition-all duration-200 border-b border-[#00ff4130]",
                 currentChatId === chat.id
                   ? "bg-[#00ff4120] text-[#00ff41]"
-                  : "text-[#00ff4180] hover:text-[#00ff41] hover:pl-3"
+                  : "text-[#00ff4180] hover:text-[#00ff41] hover:pl-3",
+                editingChatId === chat.id && "bg-[#00ff4120]"
               )}
               onClick={() => handleSelectChat(chat.id)}
             >
@@ -140,19 +222,68 @@ export default function Sidebar({
                 "text-[#00cc33] opacity-0 transition-opacity duration-200",
                 currentChatId === chat.id ? "opacity-100" : "group-hover:opacity-100"
               )}>→</span>
-              <span className="flex-1 text-[13px] truncate">
-                {chat.title}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setChatToDelete(chat);
-                }}
-                className="opacity-0 group-hover:opacity-100 p-1 text-[#00ff4180] hover:text-[#ff5f57] transition-all"
-                aria-label={`Delete chat: ${chat.title}`}
-              >
-                <Trash2 className="h-3 w-3" />
-              </button>
+              {editingChatId === chat.id ? (
+                <div className="flex-1 flex items-center gap-1">
+                  <input
+                    ref={editInputRef}
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    onKeyDown={handleEditKeyDown}
+                    onBlur={saveEdit}
+                    className="flex-1 bg-[#0a0a0a] border border-[#00ff41] text-[#00ff41] text-[13px] px-2 py-0.5 outline-none"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      saveEdit();
+                    }}
+                    className="p-1 text-[#28c840] hover:bg-[#00ff4120] transition-all"
+                    aria-label="Save title"
+                  >
+                    <Check className="h-3 w-3" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <span className="flex-1 text-[13px] truncate">
+                    {chat.title}
+                  </span>
+                  {onRenameChat && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        startEditing(chat);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-[#00ff4180] hover:text-[#00ff41] transition-all"
+                      aria-label={`Rename chat: ${chat.title}`}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      exportChat(chat);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-[#00ff4180] hover:text-[#00ff41] transition-all"
+                    aria-label={`Export chat: ${chat.title}`}
+                  >
+                    <Download className="h-3 w-3" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setChatToDelete(chat);
+                    }}
+                    className="opacity-0 group-hover:opacity-100 p-1 text-[#00ff4180] hover:text-[#ff5f57] transition-all"
+                    aria-label={`Delete chat: ${chat.title}`}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </>
+              )}
             </div>
           ))}
 

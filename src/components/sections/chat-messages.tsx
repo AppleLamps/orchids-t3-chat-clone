@@ -131,18 +131,30 @@ const UserMessage = memo(function UserMessage({
   );
 });
 
+const TypingCursor = memo(function TypingCursor() {
+  return (
+    <span
+      className="inline-block w-2 h-4 bg-[#00ff41] ml-0.5 align-middle animate-pulse"
+      style={{ animationDuration: "530ms" }}
+      aria-hidden="true"
+    />
+  );
+});
+
 const AssistantMessage = memo(function AssistantMessage({
   content,
   isLast,
   onRegenerate,
   isError,
   timestamp,
+  isStreaming,
 }: {
   content: string;
   isLast?: boolean;
   onRegenerate?: () => void;
   isError?: boolean;
   timestamp?: Date;
+  isStreaming?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -174,6 +186,7 @@ const AssistantMessage = memo(function AssistantMessage({
         <>
           <div className="text-[#00ff41] text-[14px]">
             <MarkdownRenderer content={content} />
+            {isStreaming && <TypingCursor />}
           </div>
           {content && (
             <div className={cn(
@@ -316,6 +329,7 @@ export function ChatMessages({ messages, isLoading, streamingMessageId, streamin
                 onRegenerate={onRegenerate}
                 isError={isError}
                 timestamp={!isCurrentlyStreaming ? message.createdAt : undefined}
+                isStreaming={isCurrentlyStreaming}
               />
             )}
           </div>
