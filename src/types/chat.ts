@@ -27,12 +27,36 @@ export interface Message {
   createdAt: Date;
 }
 
+export type CategoryId = "create" | "explore" | "code" | "learn";
+
+export type ModelCapability = "vision" | "reasoning";
+
+export interface Model {
+  id: string;
+  name: string;
+  icon: string;
+  capabilities: ModelCapability[];
+  isDefault?: boolean;
+}
+
+export const MODELS: Model[] = [
+  { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", icon: "xai", capabilities: ["vision", "reasoning"], isDefault: true },
+  { id: "x-ai/grok-code-fast-1", name: "Grok Code Fast", icon: "xai", capabilities: ["reasoning"] },
+  { id: "mistralai/devstral-2512:free", name: "Devstral", icon: "mistral", capabilities: ["reasoning"] },
+  { id: "openai/gpt-oss-20b:free", name: "GPT OSS 20B", icon: "openai", capabilities: ["reasoning"] },
+  { id: "nvidia/nemotron-nano-12b-v2-vl:free", name: "Nemotron Nano 12B", icon: "nvidia", capabilities: ["vision", "reasoning"] },
+];
+
+export type ModelId = Model["id"];
+
 export interface Chat {
   id: string;
   title: string;
   messages: Message[];
   createdAt: Date;
   updatedAt: Date;
+  category?: CategoryId | null;
+  model?: ModelId | null;
 }
 
 export interface Attachment {
@@ -52,13 +76,3 @@ export interface Attachment {
    */
   previewUrl?: string;
 }
-
-export const MODELS = [
-  { id: "x-ai/grok-4.1-fast", name: "Grok 4.1 Fast", icon: "xai", capabilities: ["vision", "reasoning"], isDefault: true },
-  { id: "x-ai/grok-code-fast-1", name: "Grok Code Fast", icon: "xai", capabilities: ["reasoning"] },
-  { id: "mistralai/devstral-2512:free", name: "Devstral", icon: "mistral", capabilities: ["reasoning"] },
-  { id: "openai/gpt-oss-20b:free", name: "GPT OSS 20B", icon: "openai", capabilities: ["reasoning"] },
-  { id: "nvidia/nemotron-nano-12b-v2-vl:free", name: "Nemotron Nano 12B", icon: "nvidia", capabilities: ["vision", "reasoning"] },
-] as const;
-
-export type ModelId = typeof MODELS[number]["id"];
